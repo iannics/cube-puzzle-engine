@@ -1,0 +1,52 @@
+---
+description: Domain layer is pure cube logic — no UI, rendering, or state libraries
+globs: src/domain/**/*
+alwaysApply: false
+---
+
+# Domain Layer Rules (Critical)
+
+The cube domain is **pure logic**.
+
+## Forbidden imports
+
+Do not import:
+
+- React
+- Three.js
+- Zustand
+- Any UI libraries
+- DOM APIs (`document`, `window`, `localStorage`, etc.)
+
+```typescript
+// ❌ BAD — couples domain to UI/rendering
+import { useState } from 'react'
+import * as THREE from 'three'
+import { create } from 'zustand'
+
+// ✅ GOOD — domain-only types and pure functions
+import type { CubeState, Move } from './types'
+import { applyMove } from './moves'
+```
+
+## Allowed
+
+- TypeScript only
+- Pure functions
+- Data structures
+- Deterministic logic
+
+## Constraints
+
+- No side effects
+- No rendering logic
+- No state management libraries
+- No dependency on application or UI layers
+
+## Responsibilities
+
+- Cube state representation
+- Move execution
+- Validation
+- Scrambling
+- Serialization

@@ -1,0 +1,50 @@
+---
+description: Conventional Commits with module scopes — no generic messages
+alwaysApply: true
+---
+
+# Commit Rules (Strict)
+
+When generating commits:
+
+- **MUST** use [Conventional Commits](https://www.conventionalcommits.org/) format
+- **MUST NOT** generate generic messages
+- **MUST** scope commits to domain areas: `cube`, `solver`, `rendering`, `ui`
+
+If unsure:
+
+- Choose the closest module scope
+- Prefer smaller commits over large mixed changes
+
+```
+# ❌ BAD — generic, unscoped
+update files
+fix stuff
+wip
+
+# ✅ GOOD — conventional + scoped + specific
+feat(cube): add scramble validity check
+fix(solver): correct beginner layer-2 edge orientation
+test(cube): add inverse move invariant tests
+refactor(rendering): extract sticker interpolation helper
+```
+
+## Format
+
+```
+<type>(<scope>): <imperative summary>
+
+[optional body — why, not what]
+```
+
+**Types:** `feat`, `fix`, `test`, `refactor`, `chore`, `docs`  
+**Scopes:** `cube`, `solver`, `rendering`, `ui` (pick one per commit)
+
+## Core principle
+
+One logical change per commit. If changes span modules, split into separate scoped commits.
+
+## Agent commits
+
+- **MUST NOT** add `Co-authored-by: Cursor` or any Cursor co-author trailer
+- When the agent creates commits, use `git commit-tree` (not `git commit`) so the message stays exactly as written

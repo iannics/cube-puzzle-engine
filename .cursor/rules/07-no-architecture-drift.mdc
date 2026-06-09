@@ -1,0 +1,34 @@
+---
+description: Prevent new layers, folders, and abstractions without a real problem
+alwaysApply: true
+---
+
+# Architecture Drift Prevention
+
+Do **not** introduce:
+
+- New architectural layers
+- New folders unless necessary
+- New abstractions without clear benefit
+
+Before adding new structure, ask:
+
+> "Does this exist to solve a real current problem?"
+
+If no → do not add it.
+
+```typescript
+// ❌ BAD — new layer for a one-off concern
+src/
+  services/
+    cube-move-service/   // unnecessary wrapper around domain
+      CubeMoveService.ts
+
+// ✅ GOOD — solve in the existing layer
+import { applyMove } from '../domain/moves'
+// call directly from state orchestrator
+```
+
+## Core principle
+
+Extend existing layers (`domain`, `state`, `render`, `solver`, `ui`) before inventing new ones. YAGNI applies to folder structure too.

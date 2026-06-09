@@ -1,0 +1,45 @@
+---
+description: State layer orchestrates UI, domain, and rendering — not cube logic
+globs: src/state/**/*
+alwaysApply: false
+---
+
+# State Management Rules
+
+The state layer **coordinates** UI, domain, and rendering.
+
+## Allowed
+
+- Zustand stores
+- UI state
+- Animation queues
+- Tutorial state
+
+## Forbidden
+
+- Implementing cube logic
+- Implementing solver logic
+
+```typescript
+// ❌ BAD — domain logic in the store
+function rotateFace(cube: CubeState, move: Move): CubeState {
+  const next = [...cube.faces]
+  // rotate stickers manually...
+  return { ...cube, faces: next }
+}
+
+// ✅ GOOD — orchestrate domain + UI
+import { applyMove } from '../domain/moves'
+
+const useCubeStore = create((set) => ({
+  cube: createSolvedCube(),
+  isAnimating: false,
+  tutorialStep: 0,
+  applyMove: (move: Move) =>
+    set((s) => ({ cube: applyMove(s.cube, move) })),
+}))
+```
+
+## Core principle
+
+The state layer is an **orchestrator**, not a domain engine. It calls domain functions, holds UI/animation/tutorial state, and wires layers together — it never reimplements cube or solver logic.

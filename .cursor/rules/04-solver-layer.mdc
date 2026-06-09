@@ -1,0 +1,55 @@
+---
+description: Solver layer reads domain state and outputs moves — no UI or rendering
+globs: src/solver/**/*
+alwaysApply: false
+---
+
+# Solver Layer Rules
+
+The solver must depend **only** on the domain layer.
+
+## Rules
+
+- Solver reads cube state
+- Solver outputs moves
+- Solver does **not** mutate the cube directly
+
+## Architecture
+
+- Strategy pattern allowed
+- Multiple solvers allowed (Beginner, Kociemba)
+
+## Forbidden
+
+- UI dependencies
+- Rendering dependencies
+
+```typescript
+// ❌ BAD — mutates cube or depends on UI/rendering
+import { useCubeStore } from '../state/cubeStore'
+import { animateMove } from '../render/animation'
+
+function solve(cube: CubeState) {
+  cube = applyMove(cube, 'R') // direct mutation
+  useCubeStore.getState().setCube(cube)
+  animateMove('R')
+}
+
+// ✅ GOOD — pure read-in, moves-out via strategy
+import type { CubeState, Move } from '../domain/types'
+
+interface Solver {
+  solve(state: CubeState): Move[]
+}
+
+class BeginnerSolver implements Solver {
+  solve(state: CubeState): Move[] {
+    // read state, return move sequence — no mutation
+    return ['R', "U'", 'F']
+  }
+}
+```
+
+## Core principle
+
+Solvers are **pure planners**. They consume domain state and produce moves; the state layer applies those moves through domain functions.

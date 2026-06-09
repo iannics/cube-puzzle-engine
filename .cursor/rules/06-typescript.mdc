@@ -1,0 +1,50 @@
+---
+description: Strict TypeScript — no any, explicit domain types, readonly where possible
+globs: "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# TypeScript Rules
+
+**Strict mode is mandatory.**
+
+## Forbidden
+
+- `any`
+- Unsafe casts without justification
+- Implicit `any`
+
+## Preferred
+
+- Explicit types for domain models
+- Discriminated unions for moves
+- `readonly` data structures where possible
+
+```typescript
+// ❌ BAD — any, implicit any, unsafe cast
+function applyMove(cube, move) {
+  return cube as CubeState
+}
+
+const data: any = parseCube(json)
+
+// ✅ GOOD — explicit domain types + discriminated union
+type Face = 'U' | 'D' | 'L' | 'R' | 'F' | 'B'
+type Turn = 1 | 2 | 3 // quarter, half, three-quarter
+
+type Move =
+  | { kind: 'face'; face: Face; turn: Turn }
+  | { kind: 'wide'; face: Face; turn: Turn }
+
+type CubeState = {
+  readonly stickers: readonly Sticker[]
+}
+
+function applyMove(cube: CubeState, move: Move): CubeState {
+  // ...
+}
+```
+
+## Core principle
+
+Types model the cube domain precisely. Use the compiler to catch invalid moves and state mutations at build time.

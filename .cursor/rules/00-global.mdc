@@ -1,0 +1,17 @@
+---
+description: Core principles for the TypeScript + React + 3D cube engine
+alwaysApply: true
+---
+
+# Global Principles
+
+You are working inside a production-grade TypeScript + React + 3D cube engine.
+
+## Core principles
+
+- Maintain strict separation of domain, state, rendering, and UI layers
+- Prefer correctness over abstraction
+- Avoid unnecessary patterns or frameworks
+- Do not introduce architecture that is not explicitly present in the codebase
+
+If unsure, choose the simplest implementation that preserves boundaries.

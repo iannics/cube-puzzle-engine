@@ -1,0 +1,44 @@
+---
+description: Rendering layer visualizes cube state — no domain logic or state mutation
+globs: src/render/**/*
+alwaysApply: false
+---
+
+# Rendering Layer Rules
+
+The rendering layer is **only** responsible for visualization.
+
+## Allowed
+
+- Three.js / React Three Fiber
+- Animation logic
+- Visual interpolation
+
+## Forbidden
+
+- Cube logic decisions
+- Move validation
+- Solver logic
+- State mutation outside renderer sync
+
+```typescript
+// ❌ BAD — domain logic in the renderer
+import { applyMove, isValidMove } from '../domain/moves'
+
+function onRotate(cube: CubeState, move: Move) {
+  if (!isValidMove(cube, move)) return cube
+  return applyMove(cube, move)
+}
+
+// ✅ GOOD — derive visuals from domain state only
+import type { CubeState } from '../domain/types'
+
+function CubeMesh({ state }: { state: CubeState }) {
+  const stickers = mapStateToStickers(state)
+  return <group>{/* animate sticker positions */}</group>
+}
+```
+
+## Core principle
+
+Rendering must **derive** state from the domain layer only. It reads domain state and reflects it visually — it never owns or mutates cube logic.

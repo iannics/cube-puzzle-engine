@@ -1,0 +1,54 @@
+---
+description: Domain logic must be tested — invariants over implementation details
+globs: "**/*.{test,spec}.{ts,tsx}"
+alwaysApply: false
+---
+
+# Testing Rules
+
+All **domain logic** must be tested.
+
+## Required coverage
+
+- Move correctness tests
+- Inverse move tests
+- Rotation invariants
+- Scramble validity
+- Serialization correctness
+
+## Forbidden
+
+- Testing implementation details of React components
+
+## Prefer
+
+- Property-based testing style invariants
+- Deterministic tests
+
+```typescript
+// ❌ BAD — tests React internals, not cube behavior
+it('calls setState when button clicked', () => {
+  const setState = vi.fn()
+  render(<CubeControls onMove={setState} />)
+  fireEvent.click(screen.getByRole('button', { name: 'R' }))
+  expect(setState).toHaveBeenCalledWith('R')
+})
+
+// ✅ GOOD — invariant: move + inverse restores state
+it('applyMove followed by inverse returns solved cube', () => {
+  const solved = createSolvedCube()
+  const scrambled = applyMoves(solved, scramble)
+  const restored = applyMoves(scrambled, inverse(scramble))
+  expect(restored).toEqual(solved)
+})
+
+// ✅ GOOD — property-style rotation invariant
+it.each(allMoves)('move %s preserves sticker count', (move) => {
+  const next = applyMove(createSolvedCube(), move)
+  expect(countStickers(next)).toBe(54)
+})
+```
+
+## Core principle
+
+Test **behavior and invariants** in the domain. UI tests should verify user-visible outcomes, not component internals.
