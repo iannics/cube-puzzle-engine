@@ -20,6 +20,8 @@ export const FACE_CW_SIGN: Record<Face, number> = {
   B: 1,
 }
 
+const DRAG_SENSITIVITY = 0.02
+
 export function getFaceNormal(face: Face): THREE.Vector3 {
   return FACE_NORMALS[face].clone()
 }
@@ -34,8 +36,40 @@ export function getMoveAngle(move: Move, progress: number): number {
   return sign * quarterTurns * progress * (Math.PI / 2)
 }
 
+export function getAnimatedLayerAngle(
+  move: Move,
+  progress: number,
+  mode: 'idle' | 'playing' | 'dragging',
+): number {
+  if (mode === 'dragging') {
+    return FACE_CW_SIGN[move.face] * progress * (Math.PI / 2)
+  }
+
+  return getMoveAngle(move, progress)
+}
+
 export function getDragTurn(progress: number): 1 | 3 {
   return progress >= 0 ? 1 : 3
+}
+
+function projectOntoPlane(vector: THREE.Vector3, normal: THREE.Vector3): THREE.Vector3 {
+  const n = normal.clone().normalize()
+  return vector.clone().sub(n.multiplyScalar(vector.dot(n)))
+}
+
+function screenDeltaToWorld(
+  deltaX: number,
+  deltaY: number,
+  camera: THREE.Camera,
+  faceNormal: THREE.Vector3,
+): THREE.Vector3 {
+  const cameraRight = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion)
+  const cameraUp = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion)
+  const screenDelta = new THREE.Vector3()
+    .addScaledVector(cameraRight, deltaX)
+    .addScaledVector(cameraUp, -deltaY)
+
+  return projectOntoPlane(screenDelta, faceNormal)
 }
 
 export function dragProgressFromScreenDelta(
@@ -44,18 +78,14 @@ export function dragProgressFromScreenDelta(
   deltaY: number,
   camera: THREE.Camera,
   faceWorldNormal: THREE.Vector3,
+  anchorPoint: THREE.Vector3,
 ): number {
-  const cameraRight = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion)
-  const cameraUp = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion)
-
-  const tangent = new THREE.Vector3()
-    .addScaledVector(cameraRight, deltaX)
-    .addScaledVector(cameraUp, -deltaY)
-
-  const axis = getRotationAxis(face)
-  const torque = new THREE.Vector3().crossVectors(faceWorldNormal, tangent)
+  const axis = getRotationAxis(face).normalize()
   const sign = FACE_CW_SIGN[face]
-  const magnitude = torque.dot(axis) * sign
+  const dragOnPlane = screenDeltaToWorld(deltaX, deltaY, camera, faceWorldNormal)
 
-  return magnitude / 80
+  const torque = new THREE.Vector3().crossVectors(anchorPoint, dragOnPlane)
+  const omega = axis.dot(torque) / Math.max(anchorPoint.lengthSq(), 1e-6)
+
+  return omega * sign * DRAG_SENSITIVITY
 }

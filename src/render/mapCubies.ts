@@ -1,10 +1,13 @@
-import type { Color, CubeState, CubieState, Face } from '../domain/types'
+import type { Color, CubeState, Face } from '../domain/types'
+import type { CubieGrid } from './layerSelection'
 
 const CUBIE_SIZE = 0.95
 const CUBIE_GAP = 0.05
 
 export interface RenderCubie {
+  /** Stable domain array index — does not change when cubie positions update. */
   key: string
+  grid: CubieGrid
   position: [number, number, number]
   faceColors: Record<Face, Color | null>
 }
@@ -26,18 +29,21 @@ function toFaceColors(stickers: Partial<Record<Face, Color>>): Record<Face, Colo
   }
 }
 
-function cubieKey(cubie: CubieState): string {
-  return `${cubie.x}-${cubie.y}-${cubie.z}`
-}
-
 export function mapCubies(state: CubeState): RenderCubie[] {
-  return state.cubies
-    .filter((cubie) => Object.keys(cubie.stickers).length > 0)
-    .map((cubie) => ({
-      key: cubieKey(cubie),
+  const result: RenderCubie[] = []
+
+  state.cubies.forEach((cubie, index) => {
+    if (Object.keys(cubie.stickers).length === 0) return
+
+    result.push({
+      key: String(index),
+      grid: { x: cubie.x, y: cubie.y, z: cubie.z },
       position: toWorldPosition(cubie.x, cubie.y, cubie.z, state.size),
       faceColors: toFaceColors(cubie.stickers),
-    }))
+    })
+  })
+
+  return result
 }
 
 export { CUBIE_SIZE }

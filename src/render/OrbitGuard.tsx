@@ -1,18 +1,12 @@
 import { useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
+import { getCubieUserData, isCubieObject, pointerToNdc } from './canvasInteraction'
+import { useAnimationStore } from '../state'
+import { useFaceDrag } from './useFaceDrag'
 
 interface EnabledControls {
   enabled: boolean
-}
-
-function isCubieHit(object: THREE.Object3D): boolean {
-  let current: THREE.Object3D | null = object
-  while (current) {
-    if (current.userData.isCubie === true) return true
-    current = current.parent
-  }
-  return false
 }
 
 export function OrbitGuard() {
@@ -20,6 +14,7 @@ export function OrbitGuard() {
   const controlsRef = useRef<EnabledControls | null>(null)
   const raycaster = useMemo(() => new THREE.Raycaster(), [])
   const pointer = useMemo(() => new THREE.Vector2(), [])
+  const { beginFaceDrag } = useFaceDrag()
 
   useEffect(() => {
     controlsRef.current = (controls as EnabledControls | null) ?? null
@@ -35,17 +30,27 @@ export function OrbitGuard() {
     }
 
     const onPointerDownCapture = (event: PointerEvent) => {
-      const rect = canvas.getBoundingClientRect()
-      pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1
-      pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1
+      if (event.button !== 0) return
+      if (useAnimationStore.getState().mode !== 'idle') return
 
+      pointerToNdc(event.clientX, event.clientY, canvas, pointer)
       raycaster.setFromCamera(pointer, camera)
       const hits = raycaster.intersectObjects(scene.children, true)
-      const hitCubie = hits.some((hit) => isCubieHit(hit.object))
+      const cubieHit = hits.find((hit) => isCubieObject(hit.object))
+      if (!cubieHit) return
 
-      if (hitCubie) {
-        setControlsEnabled(false)
-      }
+      const cubieData = getCubieUserData(cubieHit.object)
+      if (!cubieData) return
+
+      setControlsEnabled(false)
+      beginFaceDrag({
+        grid: cubieData.grid,
+        cubeSize: cubieData.cubeSize,
+        anchorPoint: cubieHit.point.clone(),
+        clientX: event.clientX,
+        clientY: event.clientY,
+        pointerId: event.pointerId,
+      })
     }
 
     const onPointerUp = () => {
@@ -60,7 +65,7 @@ export function OrbitGuard() {
       window.removeEventListener('pointerup', onPointerUp)
       setControlsEnabled(true)
     }
-  }, [camera, gl, pointer, raycaster, scene])
+  }, [beginFaceDrag, camera, gl, pointer, raycaster, scene])
 
   return null
 }

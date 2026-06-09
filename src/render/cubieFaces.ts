@@ -1,4 +1,3 @@
-import type { ThreeEvent } from '@react-three/fiber'
 import type { Face } from '../domain'
 
 export const MATERIAL_ORDER: Face[] = ['R', 'L', 'U', 'D', 'F', 'B']
@@ -22,14 +21,4 @@ export function faceFromNormal(x: number, y: number, z: number): Face {
   }
 
   return z > 0 ? 'F' : 'B'
-}
-
-export function faceFromPointerEvent(event: ThreeEvent<PointerEvent>): Face | null {
-  const fromIndex = faceFromIndex(event.faceIndex)
-  if (fromIndex) return fromIndex
-
-  if (!event.face) return null
-
-  const normal = event.face.normal.clone().transformDirection(event.object.matrixWorld)
-  return faceFromNormal(normal.x, normal.y, normal.z)
 }

@@ -1,45 +1,45 @@
-import type { ThreeEvent } from '@react-three/fiber'
 import { useMemo } from 'react'
-import * as THREE from 'three'
 import type { Color, Face } from '../domain/types'
-import { FACE_HEX, HIDDEN_FACE_HEX } from './colors'
-import { faceFromPointerEvent, MATERIAL_ORDER } from './cubieFaces'
+import type { CubieUserData } from './canvasInteraction'
+import { getCubieMaterials } from './cubieMaterials'
+import type { CubieGrid } from './layerSelection'
 import { CUBIE_SIZE } from './mapCubies'
 
 interface CubieMeshProps {
   position: [number, number, number]
+  grid: CubieGrid
+  cubeSize: number
   faceColors: Record<Face, Color | null>
-  onFacePointerDown?: (face: Face, event: ThreeEvent<PointerEvent>) => void
 }
 
-export function CubieMesh({ position, faceColors, onFacePointerDown }: CubieMeshProps) {
+export function CubieMesh({ position, grid, cubeSize, faceColors }: CubieMeshProps) {
   const materials = useMemo(
-    () =>
-      MATERIAL_ORDER.map(
-        (face) =>
-          new THREE.MeshStandardMaterial({
-            color: faceColors[face] ? FACE_HEX[faceColors[face]!] : HIDDEN_FACE_HEX,
-          }),
-      ),
-    [faceColors],
+    () => getCubieMaterials(faceColors),
+    [faceColors.U, faceColors.D, faceColors.L, faceColors.R, faceColors.F, faceColors.B],
+  )
+
+  const userData = useMemo<CubieUserData>(
+    () => ({
+      isCubie: true,
+      grid,
+      cubeSize,
+      faceColors: {
+        U: faceColors.U !== null,
+        D: faceColors.D !== null,
+        L: faceColors.L !== null,
+        R: faceColors.R !== null,
+        F: faceColors.F !== null,
+        B: faceColors.B !== null,
+      },
+    }),
+    [grid, cubeSize, faceColors.U, faceColors.D, faceColors.L, faceColors.R, faceColors.F, faceColors.B],
   )
 
   return (
-    <mesh
-      userData={{ isCubie: true }}
-      position={position}
-      material={materials}
-      onPointerDown={(event) => {
-        if (event.button !== 0 || !onFacePointerDown) return
-
-        event.stopPropagation()
-        const face = faceFromPointerEvent(event)
-        if (!face || !faceColors[face]) return
-
-        onFacePointerDown(face, event)
-      }}
-    >
-      <boxGeometry args={[CUBIE_SIZE, CUBIE_SIZE, CUBIE_SIZE]} />
-    </mesh>
+    <group position={position} userData={userData}>
+      <mesh material={materials} dispose={null}>
+        <boxGeometry args={[CUBIE_SIZE, CUBIE_SIZE, CUBIE_SIZE]} />
+      </mesh>
+    </group>
   )
 }

@@ -1,16 +1,28 @@
-import type { ThreeEvent } from '@react-three/fiber'
 import { useThree } from '@react-three/fiber'
 import { useCallback, useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import type { Face } from '../domain'
 import { useAnimationStore } from '../state'
-import { dragProgressFromScreenDelta } from './layerRotation'
+import { getFaceNormal, dragProgressFromScreenDelta } from './layerRotation'
+import { selectLayerFromDrag, type CubieGrid } from './layerSelection'
 
-const DRAG_START_THRESHOLD_PX = 5
+const DRAG_START_THRESHOLD_PX = 4
+
+export interface FaceDragStart {
+  grid: CubieGrid
+  cubeSize: number
+  anchorPoint: THREE.Vector3
+  clientX: number
+  clientY: number
+  pointerId: number
+}
 
 interface DragState {
-  face: Face
-  faceWorldNormal: THREE.Vector3
+  grid: CubieGrid
+  cubeSize: number
+  face: Face | null
+  faceWorldNormal: THREE.Vector3 | null
+  anchorPoint: THREE.Vector3
   startX: number
   startY: number
   lastX: number
@@ -28,7 +40,6 @@ export function useFaceDrag() {
     onPointerUp: (event: PointerEvent) => void
   } | null>(null)
 
-  const mode = useAnimationStore((state) => state.mode)
   const startDrag = useAnimationStore((state) => state.startDrag)
   const updateDragProgress = useAnimationStore((state) => state.updateDragProgress)
   const endDrag = useAnimationStore((state) => state.endDrag)
@@ -54,26 +65,22 @@ export function useFaceDrag() {
 
   useEffect(() => removeListeners, [])
 
-  const onFacePointerDown = useCallback(
-    (face: Face, event: ThreeEvent<PointerEvent>) => {
-      if (mode !== 'idle') return
+  const beginFaceDrag = useCallback(
+    (start: FaceDragStart) => {
+      if (useAnimationStore.getState().mode !== 'idle') return
 
-      event.stopPropagation()
-
-      const faceWorldNormal = event.face?.normal
-        .clone()
-        .transformDirection(event.object.matrixWorld) ?? new THREE.Vector3()
-
-      const startX = event.nativeEvent.clientX
-      const startY = event.nativeEvent.clientY
+      removeListeners()
 
       dragRef.current = {
-        face,
-        faceWorldNormal,
-        startX,
-        startY,
-        lastX: startX,
-        lastY: startY,
+        grid: start.grid,
+        cubeSize: start.cubeSize,
+        face: null,
+        faceWorldNormal: null,
+        anchorPoint: start.anchorPoint,
+        startX: start.clientX,
+        startY: start.clientY,
+        lastX: start.clientX,
+        lastY: start.clientY,
         accumulated: 0,
         startedInStore: false,
       }
@@ -87,15 +94,26 @@ export function useFaceDrag() {
           const totalDy = moveEvent.clientY - drag.startY
           if (Math.hypot(totalDx, totalDy) < DRAG_START_THRESHOLD_PX) return
 
+          const face = selectLayerFromDrag(
+            drag.grid,
+            drag.cubeSize,
+            totalDx,
+            totalDy,
+            cameraRef.current,
+            drag.anchorPoint,
+          )
+          drag.face = face
+          drag.faceWorldNormal = getFaceNormal(face)
           drag.startedInStore = true
-          startDragRef.current(drag.face)
+          startDragRef.current(face)
 
           const initialProgress = dragProgressFromScreenDelta(
-            drag.face,
+            face,
             totalDx,
             totalDy,
             cameraRef.current,
             drag.faceWorldNormal,
+            drag.anchorPoint,
           )
           drag.accumulated = initialProgress
           updateDragProgressRef.current(initialProgress)
@@ -103,6 +121,8 @@ export function useFaceDrag() {
           drag.lastY = moveEvent.clientY
           return
         }
+
+        if (!drag.face || !drag.faceWorldNormal) return
 
         const deltaX = moveEvent.clientX - drag.lastX
         const deltaY = moveEvent.clientY - drag.lastY
@@ -115,8 +135,8 @@ export function useFaceDrag() {
           deltaY,
           cameraRef.current,
           drag.faceWorldNormal,
+          drag.anchorPoint,
         )
-
         drag.accumulated += deltaProgress
         updateDragProgressRef.current(drag.accumulated)
       }
@@ -141,13 +161,13 @@ export function useFaceDrag() {
       window.addEventListener('pointerup', onPointerUp)
 
       try {
-        gl.domElement.setPointerCapture(event.nativeEvent.pointerId)
+        gl.domElement.setPointerCapture(start.pointerId)
       } catch {
         // setPointerCapture is best-effort for drag tracking.
       }
     },
-    [gl.domElement, mode],
+    [gl.domElement],
   )
 
-  return { onFacePointerDown }
+  return { beginFaceDrag }
 }
