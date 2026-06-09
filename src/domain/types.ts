@@ -19,3 +19,7 @@ export interface CubeState {
   size: number
   cubies: CubieState[]
 }
+
+export type Turn = 1 | 2 | 3
+
+export type Move = { kind: 'face'; face: Face; turn: Turn }

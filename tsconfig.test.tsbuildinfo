@@ -1,1 +1,1 @@
-{"root":["./tests/domain/cube.test.ts"],"version":"6.0.3"}
+{"root":["./tests/domain/cube.test.ts","./tests/domain/moves.test.ts"],"version":"6.0.3"}

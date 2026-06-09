@@ -1,11 +1,10 @@
-import { useMemo } from 'react'
-import { createSolvedCube } from './domain'
 import { CubeScene } from './render'
+import { useCubeKeyboard } from './ui'
 
 function App() {
-  const cube = useMemo(() => createSolvedCube(3), [])
+  useCubeKeyboard()
 
-  return <CubeScene state={cube} />
+  return <CubeScene />
 }
 
 export default App
