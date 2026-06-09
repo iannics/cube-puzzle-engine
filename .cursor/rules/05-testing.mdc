@@ -8,6 +8,8 @@ alwaysApply: false
 
 All **domain logic** must be tested.
 
+Tests live in [`tests/`](tests/) at the project root, mirroring layer folders (`tests/domain/`, `tests/solver/`, etc.). Do not colocate test files inside `src/`.
+
 ## Required coverage
 
 - Move correctness tests
