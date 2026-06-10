@@ -48,6 +48,13 @@ describe('getDragTurn', () => {
     expect(getDragTurn('D', 0.5)).toBe(3)
     expect(getDragTurn('D', -0.5)).toBe(1)
   })
+
+  it('maps positive progress to turn 1 on F and turn 3 on B', () => {
+    expect(getDragTurn('F', 0.5)).toBe(1)
+    expect(getDragTurn('F', -0.5)).toBe(3)
+    expect(getDragTurn('B', 0.5)).toBe(3)
+    expect(getDragTurn('B', -0.5)).toBe(1)
+  })
 })
 
 describe('getAnimatedLayerAngle dragging', () => {
@@ -76,6 +83,12 @@ describe('getAnimatedLayerAngle dragging', () => {
     const uAngle = getAnimatedLayerAngle(faceMove('U', 1), 0.5, 'dragging')
     const dAngle = getAnimatedLayerAngle(faceMove('D', 1), 0.5, 'dragging')
     expect(Math.sign(uAngle)).toBe(Math.sign(dAngle))
+  })
+
+  it('rotates B drag-up in the same direction as F drag-up', () => {
+    const fAngle = getAnimatedLayerAngle(faceMove('F', 1), 0.5, 'dragging')
+    const bAngle = getAnimatedLayerAngle(faceMove('B', 1), 0.5, 'dragging')
+    expect(Math.sign(fAngle)).toBe(Math.sign(bAngle))
   })
 })
 
@@ -162,5 +175,16 @@ describe('dragProgressFromScreenDelta', () => {
     const bUp = dragProgressFromScreenDelta('B', 0, -80, camera, new THREE.Vector3(0, 0, -1), bAnchor)
 
     expect(Math.sign(fUp)).toBe(Math.sign(bUp))
+  })
+
+  it('returns opposite sign for opposite vertical drag on the B face', () => {
+    const anchorPoint = new THREE.Vector3(0.5, 0.5, -1.4)
+    const faceNormal = new THREE.Vector3(0, 0, -1)
+
+    const up = dragProgressFromScreenDelta('B', 0, -80, camera, faceNormal, anchorPoint)
+    const down = dragProgressFromScreenDelta('B', 0, 80, camera, faceNormal, anchorPoint)
+
+    expect(up * down).toBeLessThan(0)
+    expect(Math.abs(up)).toBeGreaterThan(0.1)
   })
 })

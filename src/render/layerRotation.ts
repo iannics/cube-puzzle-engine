@@ -54,9 +54,9 @@ export function getMoveAngle(move: Move, progress: number): number {
   return sign * quarterTurns * progress * (Math.PI / 2)
 }
 
-/** L/D need inverted release mapping so drag-follows-finger angles stay continuous. */
+/** Mirror faces need inverted release mapping so drag-follows-finger angles stay continuous. */
 function invertDragRelease(face: Face): boolean {
-  return face === 'L' || face === 'D'
+  return face === 'L' || face === 'D' || face === 'B'
 }
 
 export function getDragTurn(face: Face, progress: number): 1 | 3 {
