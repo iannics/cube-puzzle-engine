@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { faceMove, type Face, type Move } from '../domain'
+import { getDragTurn } from '../render/layerRotation'
 import { useCubeStore } from './cubeStore'
 
 export type AnimationMode = 'idle' | 'playing' | 'dragging'
@@ -69,7 +70,7 @@ export const useAnimationStore = create<AnimationStore>((set, get) => ({
     if (mode !== 'dragging' || !activeMove) return
 
     if (Math.abs(progress) >= 0.25) {
-      const turn = progress > 0 ? 1 : 3
+      const turn = getDragTurn(activeMove.face, progress)
       set({
         mode: 'playing',
         activeMove: faceMove(activeMove.face, turn),

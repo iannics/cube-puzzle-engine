@@ -30,10 +30,38 @@ export function getRotationAxis(face: Face): THREE.Vector3 {
   return FACE_NORMALS[face].clone()
 }
 
+function isMirrorFace(face: Face): boolean {
+  const axis = FACE_NORMALS[face]
+  return axis.x < 0 || axis.y < 0 || axis.z < 0
+}
+
+function getCanonicalAxis(face: Face): THREE.Vector3 {
+  const axis = FACE_NORMALS[face]
+  return new THREE.Vector3(Math.abs(axis.x), Math.abs(axis.y), Math.abs(axis.z))
+}
+
+/**
+ * Drag torque sign: mirror faces (L, D, B) use the partner-face sign so screen
+ * motion matches layer motion the same way it does on R, U, and F.
+ */
+function dragSignForFace(face: Face): number {
+  return isMirrorFace(face) ? -FACE_CW_SIGN[face] : FACE_CW_SIGN[face]
+}
+
 export function getMoveAngle(move: Move, progress: number): number {
   const sign = FACE_CW_SIGN[move.face]
   const quarterTurns = move.turn === 2 ? 2 : move.turn === 3 ? -1 : 1
   return sign * quarterTurns * progress * (Math.PI / 2)
+}
+
+/** L/D need inverted release mapping so drag-follows-finger angles stay continuous. */
+function invertDragRelease(face: Face): boolean {
+  return face === 'L' || face === 'D'
+}
+
+export function getDragTurn(face: Face, progress: number): 1 | 3 {
+  const positiveProgressIsTurn1 = !invertDragRelease(face)
+  return (progress >= 0) === positiveProgressIsTurn1 ? 1 : 3
 }
 
 export function getAnimatedLayerAngle(
@@ -42,14 +70,27 @@ export function getAnimatedLayerAngle(
   mode: 'idle' | 'playing' | 'dragging',
 ): number {
   if (mode === 'dragging') {
-    return FACE_CW_SIGN[move.face] * progress * (Math.PI / 2)
+    let angle = FACE_CW_SIGN[move.face] * progress * (Math.PI / 2)
+    if (invertDragRelease(move.face)) {
+      angle = -angle
+    }
+    return angle
   }
 
   return getMoveAngle(move, progress)
 }
 
-export function getDragTurn(progress: number): 1 | 3 {
-  return progress >= 0 ? 1 : 3
+/**
+ * Euler rotation components matching the original renderer: always rotate on the
+ * positive X/Y/Z channel for the face axis, with direction encoded in angle.
+ */
+export function getLayerEulerRotation(face: Face, angle: number): [number, number, number] {
+  const axis = FACE_NORMALS[face]
+  return [
+    axis.x !== 0 ? angle : 0,
+    axis.y !== 0 ? angle : 0,
+    axis.z !== 0 ? angle : 0,
+  ]
 }
 
 function projectOntoPlane(vector: THREE.Vector3, normal: THREE.Vector3): THREE.Vector3 {
@@ -80,12 +121,11 @@ export function dragProgressFromScreenDelta(
   faceWorldNormal: THREE.Vector3,
   anchorPoint: THREE.Vector3,
 ): number {
-  const axis = getRotationAxis(face).normalize()
-  const sign = FACE_CW_SIGN[face]
+  const axis = getCanonicalAxis(face)
   const dragOnPlane = screenDeltaToWorld(deltaX, deltaY, camera, faceWorldNormal)
 
   const torque = new THREE.Vector3().crossVectors(anchorPoint, dragOnPlane)
   const omega = axis.dot(torque) / Math.max(anchorPoint.lengthSq(), 1e-6)
 
-  return omega * sign * DRAG_SENSITIVITY
+  return omega * dragSignForFace(face) * DRAG_SENSITIVITY
 }

@@ -75,6 +75,28 @@ describe('applyMove', () => {
     })
   })
 
+  it('F moves the URF corner to UFR with remapped side stickers', () => {
+    const solved = createSolvedCube(3)
+    const next = applyMove(solved, faceMove('F', 1))
+    const ufr = next.cubies.find((c) => c.x === 2 && c.y === 0 && c.z === 2)
+    expect(ufr?.stickers).toEqual({
+      L: 'white',
+      U: 'red',
+      F: 'green',
+    })
+  })
+
+  it('B moves the UBR corner to UBL with remapped side stickers', () => {
+    const solved = createSolvedCube(3)
+    const next = applyMove(solved, faceMove('B', 1))
+    const ubl = next.cubies.find((c) => c.x === 0 && c.y === 2 && c.z === 0)
+    expect(ubl?.stickers).toEqual({
+      R: 'white',
+      D: 'red',
+      B: 'blue',
+    })
+  })
+
   it('works for 2x2 cubes', () => {
     const solved = createSolvedCube(2)
     const scrambled = applyMove(solved, faceMove('U', 1))

@@ -9,7 +9,8 @@ export function CubeScene() {
 
   return (
     <Canvas
-      camera={{ position: [4, 4, 4], fov: 45 }}
+      camera={{ position: [4, 4, 4], fov: 45, near: 0.1, far: 100 }}
+      gl={{ logarithmicDepthBuffer: true }}
       style={{ width: '100%', height: '100%' }}
     >
       <ambientLight intensity={0.6} />

@@ -4,7 +4,7 @@ import { isInFaceLayer } from '../domain'
 import { useAnimationStore, useCubeStore } from '../state'
 import { AnimationController } from './AnimationController'
 import { CubieMesh } from './CubieMesh'
-import { getAnimatedLayerAngle, getRotationAxis } from './layerRotation'
+import { getAnimatedLayerAngle, getLayerEulerRotation, getRotationAxis } from './layerRotation'
 import { mapCubies, type RenderCubie } from './mapCubies'
 
 function splitCubies(
@@ -51,27 +51,27 @@ export function CubeMesh() {
 
   const rotationAxis = activeMove ? getRotationAxis(activeMove.face) : null
   const angle = activeMove ? getAnimatedLayerAngle(activeMove, progress, mode) : 0
+  const layerRotation = useMemo(
+    () => (activeMove ? getLayerEulerRotation(activeMove.face, angle) : null),
+    [activeMove, angle],
+  )
 
   return (
     <group>
       <AnimationController />
-      {staticCubies.map((cubie) => (
-        <CubieMesh
-          key={cubie.key}
-          position={cubie.position}
-          grid={cubie.grid}
-          cubeSize={cube.size}
-          faceColors={cubie.faceColors}
-        />
-      ))}
-      {isAnimating && rotationAxis && (
-        <group
-          rotation={[
-            rotationAxis.x !== 0 ? angle : 0,
-            rotationAxis.y !== 0 ? angle : 0,
-            rotationAxis.z !== 0 ? angle : 0,
-          ]}
-        >
+      <group renderOrder={0}>
+        {staticCubies.map((cubie) => (
+          <CubieMesh
+            key={cubie.key}
+            position={cubie.position}
+            grid={cubie.grid}
+            cubeSize={cube.size}
+            faceColors={cubie.faceColors}
+          />
+        ))}
+      </group>
+      {isAnimating && rotationAxis && layerRotation && activeMove && (
+        <group renderOrder={2} rotation={layerRotation}>
           {layerCubies.map((cubie) => (
             <CubieMesh
               key={cubie.key}
@@ -79,6 +79,7 @@ export function CubeMesh() {
               grid={cubie.grid}
               cubeSize={cube.size}
               faceColors={cubie.faceColors}
+              isLayerActive
             />
           ))}
         </group>
