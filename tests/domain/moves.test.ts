@@ -5,10 +5,23 @@ import {
   faceMove,
   inverse,
   type CubeState,
+  type CubieState,
   type Face,
 } from '../../src/domain'
 
 const FACES: Face[] = ['U', 'D', 'L', 'R', 'F', 'B']
+
+function exteriorFaces(cubie: CubieState, size: number): Face[] {
+  const last = size - 1
+  const faces: Face[] = []
+  if (cubie.x === 0) faces.push('L')
+  if (cubie.x === last) faces.push('R')
+  if (cubie.y === 0) faces.push('D')
+  if (cubie.y === last) faces.push('U')
+  if (cubie.z === 0) faces.push('B')
+  if (cubie.z === last) faces.push('F')
+  return faces
+}
 
 function stickerCount(cube: CubeState): number {
   return cube.cubies.reduce((sum, cubie) => sum + Object.keys(cubie.stickers).length, 0)
@@ -75,26 +88,42 @@ describe('applyMove', () => {
     })
   })
 
-  it('F moves the URF corner to UFR with remapped side stickers', () => {
+  it('F moves the URF corner to DFR with outward-facing side stickers', () => {
     const solved = createSolvedCube(3)
     const next = applyMove(solved, faceMove('F', 1))
-    const ufr = next.cubies.find((c) => c.x === 2 && c.y === 0 && c.z === 2)
-    expect(ufr?.stickers).toEqual({
-      L: 'white',
-      U: 'red',
+    const dfr = next.cubies.find((c) => c.x === 2 && c.y === 0 && c.z === 2)
+    expect(dfr?.stickers).toEqual({
+      R: 'white',
+      D: 'red',
       F: 'green',
     })
   })
 
-  it('B moves the UBR corner to UBL with remapped side stickers', () => {
+  it('B moves the UBR corner to UBL with outward-facing side stickers', () => {
     const solved = createSolvedCube(3)
     const next = applyMove(solved, faceMove('B', 1))
     const ubl = next.cubies.find((c) => c.x === 0 && c.y === 2 && c.z === 0)
     expect(ubl?.stickers).toEqual({
-      R: 'white',
-      D: 'red',
+      L: 'white',
+      U: 'red',
       B: 'blue',
     })
+  })
+
+  it('keeps every sticker on an exterior face after F and B turns', () => {
+    const solved = createSolvedCube(3)
+
+    for (const face of ['F', 'B'] as const) {
+      for (const turn of [1, 2, 3] as const) {
+        const cube = applyMove(solved, faceMove(face, turn))
+        for (const cubie of cube.cubies) {
+          const exterior = exteriorFaces(cubie, cube.size)
+          for (const stickerFace of Object.keys(cubie.stickers)) {
+            expect(exterior).toContain(stickerFace)
+          }
+        }
+      }
+    }
   })
 
   it('works for 2x2 cubes', () => {

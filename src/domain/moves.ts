@@ -44,14 +44,14 @@ const FACE_SPECS: Record<Face, FaceSpec> = {
     layerIndex: (size) => size - 1,
     planeAxes: ['x', 'y'],
     cw: (x, y, size) => [y, size - 1 - x],
-    stickerCycle: ['U', 'L', 'D', 'R'],
+    stickerCycle: ['U', 'R', 'D', 'L'],
   },
   B: {
     axis: 'z',
     layerIndex: () => 0,
     planeAxes: ['x', 'y'],
     cw: (x, y, size) => [size - 1 - y, x],
-    stickerCycle: ['U', 'R', 'D', 'L'],
+    stickerCycle: ['U', 'L', 'D', 'R'],
   },
 }
 
