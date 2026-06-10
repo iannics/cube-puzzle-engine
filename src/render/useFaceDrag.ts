@@ -1,10 +1,10 @@
 import { useThree } from '@react-three/fiber'
 import { useCallback, useEffect, useRef } from 'react'
 import * as THREE from 'three'
-import type { Face } from '../domain'
+import type { Move } from '../domain'
 import { useAnimationStore } from '../state'
-import { getFaceNormal, dragProgressFromScreenDelta } from './layerRotation'
-import { selectLayerFromDrag, type CubieGrid } from './layerSelection'
+import { dragProgressFromScreenDelta, getDragReferenceFace, getFaceNormal } from './layerRotation'
+import { selectMoveFromDrag, type CubieGrid } from './layerSelection'
 
 const DRAG_START_THRESHOLD_PX = 4
 
@@ -20,7 +20,7 @@ export interface FaceDragStart {
 interface DragState {
   grid: CubieGrid
   cubeSize: number
-  face: Face | null
+  move: Move | null
   faceWorldNormal: THREE.Vector3 | null
   anchorPoint: THREE.Vector3
   startX: number
@@ -74,7 +74,7 @@ export function useFaceDrag() {
       dragRef.current = {
         grid: start.grid,
         cubeSize: start.cubeSize,
-        face: null,
+        move: null,
         faceWorldNormal: null,
         anchorPoint: start.anchorPoint,
         startX: start.clientX,
@@ -94,7 +94,7 @@ export function useFaceDrag() {
           const totalDy = moveEvent.clientY - drag.startY
           if (Math.hypot(totalDx, totalDy) < DRAG_START_THRESHOLD_PX) return
 
-          const face = selectLayerFromDrag(
+          const move = selectMoveFromDrag(
             drag.grid,
             drag.cubeSize,
             totalDx,
@@ -102,13 +102,13 @@ export function useFaceDrag() {
             cameraRef.current,
             drag.anchorPoint,
           )
-          drag.face = face
-          drag.faceWorldNormal = getFaceNormal(face)
+          drag.move = move
+          drag.faceWorldNormal = getFaceNormal(getDragReferenceFace(move))
           drag.startedInStore = true
-          startDragRef.current(face)
+          startDragRef.current(move)
 
           const initialProgress = dragProgressFromScreenDelta(
-            face,
+            move,
             totalDx,
             totalDy,
             cameraRef.current,
@@ -122,7 +122,7 @@ export function useFaceDrag() {
           return
         }
 
-        if (!drag.face || !drag.faceWorldNormal) return
+        if (!drag.move || !drag.faceWorldNormal) return
 
         const deltaX = moveEvent.clientX - drag.lastX
         const deltaY = moveEvent.clientY - drag.lastY
@@ -130,7 +130,7 @@ export function useFaceDrag() {
         drag.lastY = moveEvent.clientY
 
         const deltaProgress = dragProgressFromScreenDelta(
-          drag.face,
+          drag.move,
           deltaX,
           deltaY,
           cameraRef.current,

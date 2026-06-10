@@ -1,11 +1,15 @@
 import * as THREE from 'three'
-import type { Face } from '../domain'
-import { dragProgressFromScreenDelta, getFaceNormal } from './layerRotation'
+import { faceMove, sliceMove, type Face, type Move, type Slice } from '../domain'
+import { dragProgressFromScreenDelta, getDragReferenceFace, getFaceNormal } from './layerRotation'
 
 export interface CubieGrid {
   x: number
   y: number
   z: number
+}
+
+function middleLayerIndex(size: number): number {
+  return Math.floor((size - 1) / 2)
 }
 
 export function getOuterFaces(grid: CubieGrid, size: number): Face[] {
@@ -19,36 +23,55 @@ export function getOuterFaces(grid: CubieGrid, size: number): Face[] {
   return faces
 }
 
-export function selectLayerFromDrag(
+export function getApplicableSlices(grid: CubieGrid, size: number): Slice[] {
+  if (size < 3) return []
+
+  const mid = middleLayerIndex(size)
+  const slices: Slice[] = []
+  if (grid.x === mid) slices.push('M')
+  if (grid.y === mid) slices.push('E')
+  if (grid.z === mid) slices.push('S')
+  return slices
+}
+
+export function getCandidateMoves(grid: CubieGrid, size: number): Move[] {
+  const moves: Move[] = getOuterFaces(grid, size).map((face) => faceMove(face, 1))
+  for (const slice of getApplicableSlices(grid, size)) {
+    moves.push(sliceMove(slice, 1))
+  }
+  return moves
+}
+
+export function selectMoveFromDrag(
   grid: CubieGrid,
   size: number,
   deltaX: number,
   deltaY: number,
   camera: THREE.Camera,
   anchorPoint: THREE.Vector3,
-): Face {
-  const candidates = getOuterFaces(grid, size)
+): Move {
+  const candidates = getCandidateMoves(grid, size)
   if (candidates.length === 0) {
-    throw new Error('Interior cubie cannot be dragged')
+    throw new Error('Cubie has no draggable layers')
   }
 
   if (candidates.length === 1) {
     return candidates[0]
   }
 
-  let bestFace = candidates[0]
+  let bestMove = candidates[0]
   let bestMagnitude = 0
 
-  for (const face of candidates) {
-    const worldNormal = getFaceNormal(face)
+  for (const move of candidates) {
+    const worldNormal = getFaceNormal(getDragReferenceFace(move))
     const magnitude = Math.abs(
-      dragProgressFromScreenDelta(face, deltaX, deltaY, camera, worldNormal, anchorPoint),
+      dragProgressFromScreenDelta(move, deltaX, deltaY, camera, worldNormal, anchorPoint),
     )
     if (magnitude > bestMagnitude) {
       bestMagnitude = magnitude
-      bestFace = face
+      bestMove = move
     }
   }
 
-  return bestFace
+  return bestMove
 }

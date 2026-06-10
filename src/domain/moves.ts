@@ -1,8 +1,8 @@
-import type { Color, CubieState, CubeState, Face, Move, Turn } from './types'
+import type { Color, CubieState, CubeState, Face, Move, Slice, Turn } from './types'
 
 type Axis = 'x' | 'y' | 'z'
 
-interface FaceSpec {
+interface LayerSpec {
   axis: Axis
   layerIndex: (size: number) => number
   planeAxes: ['y', 'z'] | ['x', 'z'] | ['x', 'y']
@@ -10,7 +10,11 @@ interface FaceSpec {
   stickerCycle: readonly Face[]
 }
 
-const FACE_SPECS: Record<Face, FaceSpec> = {
+function middleLayerIndex(size: number): number {
+  return Math.floor((size - 1) / 2)
+}
+
+const FACE_SPECS: Record<Face, LayerSpec> = {
   R: {
     axis: 'x',
     layerIndex: (size) => size - 1,
@@ -55,8 +59,45 @@ const FACE_SPECS: Record<Face, FaceSpec> = {
   },
 }
 
+/** Middle slices follow the same direction as L, D, and F when viewed from outside. */
+const SLICE_SPECS: Record<Slice, LayerSpec> = {
+  M: {
+    axis: 'x',
+    layerIndex: middleLayerIndex,
+    planeAxes: ['y', 'z'],
+    cw: (y, z, size) => [size - 1 - z, y],
+    stickerCycle: ['U', 'F', 'D', 'B'],
+  },
+  E: {
+    axis: 'y',
+    layerIndex: middleLayerIndex,
+    planeAxes: ['x', 'z'],
+    cw: (x, z, size) => [z, size - 1 - x],
+    stickerCycle: ['R', 'B', 'L', 'F'],
+  },
+  S: {
+    axis: 'z',
+    layerIndex: middleLayerIndex,
+    planeAxes: ['x', 'y'],
+    cw: (x, y, size) => [y, size - 1 - x],
+    stickerCycle: ['U', 'R', 'D', 'L'],
+  },
+}
+
+function getLayerSpec(move: Move): LayerSpec {
+  return move.kind === 'face' ? FACE_SPECS[move.face] : SLICE_SPECS[move.slice]
+}
+
 export function getFaceRotationAxis(face: Face): Axis {
   return FACE_SPECS[face].axis
+}
+
+export function getSliceRotationAxis(slice: Slice): Axis {
+  return SLICE_SPECS[slice].axis
+}
+
+export function getMoveRotationAxis(move: Move): Axis {
+  return getLayerSpec(move).axis
 }
 
 export function isInFaceLayer(cubie: CubieState, face: Face, size: number): boolean {
@@ -64,9 +105,22 @@ export function isInFaceLayer(cubie: CubieState, face: Face, size: number): bool
   return cubie[spec.axis] === spec.layerIndex(size)
 }
 
+export function isInSliceLayer(cubie: CubieState, slice: Slice, size: number): boolean {
+  if (size < 3) return false
+  const spec = SLICE_SPECS[slice]
+  return cubie[spec.axis] === spec.layerIndex(size)
+}
+
+export function isInMoveLayer(cubie: CubieState, move: Move, size: number): boolean {
+  if (move.kind === 'face') {
+    return isInFaceLayer(cubie, move.face, size)
+  }
+  return isInSliceLayer(cubie, move.slice, size)
+}
+
 function rotateInPlane(
   cubie: CubieState,
-  spec: FaceSpec,
+  spec: LayerSpec,
   size: number,
   quarterTurns: Turn,
 ): Pick<CubieState, 'x' | 'y' | 'z'> {
@@ -106,12 +160,16 @@ function remapStickers(
   return next
 }
 
-function rotateCubie(cubie: CubieState, face: Face, turn: Turn, size: number): CubieState {
-  if (!isInFaceLayer(cubie, face, size)) {
+function rotateCubieInLayer(
+  cubie: CubieState,
+  spec: LayerSpec,
+  turn: Turn,
+  size: number,
+): CubieState {
+  if (cubie[spec.axis] !== spec.layerIndex(size)) {
     return cubie
   }
 
-  const spec = FACE_SPECS[face]
   const position = rotateInPlane(cubie, spec, size, turn)
 
   return {
@@ -121,24 +179,28 @@ function rotateCubie(cubie: CubieState, face: Face, turn: Turn, size: number): C
 }
 
 export function applyMove(cube: CubeState, move: Move): CubeState {
-  if (move.kind !== 'face') {
+  if (move.kind === 'slice' && cube.size < 3) {
     return cube
   }
 
-  const cubies = cube.cubies.map((cubie) => rotateCubie(cubie, move.face, move.turn, cube.size))
+  const spec = getLayerSpec(move)
+  const cubies = cube.cubies.map((cubie) => rotateCubieInLayer(cubie, spec, move.turn, cube.size))
 
   return { size: cube.size, cubies }
 }
 
 export function inverse(move: Move): Move {
-  if (move.kind !== 'face') {
-    return move
-  }
-
   const turnMap: Record<Turn, Turn> = { 1: 3, 2: 2, 3: 1 }
-  return { kind: 'face', face: move.face, turn: turnMap[move.turn] }
+  if (move.kind === 'face') {
+    return { kind: 'face', face: move.face, turn: turnMap[move.turn] }
+  }
+  return { kind: 'slice', slice: move.slice, turn: turnMap[move.turn] }
 }
 
 export function faceMove(face: Face, turn: Turn = 1): Move {
   return { kind: 'face', face, turn }
+}
+
+export function sliceMove(slice: Slice, turn: Turn = 1): Move {
+  return { kind: 'slice', slice, turn }
 }

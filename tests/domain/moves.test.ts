@@ -4,12 +4,15 @@ import {
   createSolvedCube,
   faceMove,
   inverse,
+  sliceMove,
   type CubeState,
   type CubieState,
   type Face,
+  type Slice,
 } from '../../src/domain'
 
 const FACES: Face[] = ['U', 'D', 'L', 'R', 'F', 'B']
+const SLICES: Slice[] = ['M', 'E', 'S']
 
 function exteriorFaces(cubie: CubieState, size: number): Face[] {
   const last = size - 1
@@ -131,5 +134,73 @@ describe('applyMove', () => {
     const scrambled = applyMove(solved, faceMove('U', 1))
     const restored = applyMove(scrambled, faceMove('U', 3))
     expect(cubesEqual(restored, solved)).toBe(true)
+  })
+})
+
+describe('slice moves', () => {
+  it('move followed by inverse restores solved cube for every slice', () => {
+    const solved = createSolvedCube(3)
+
+    for (const slice of SLICES) {
+      const move = sliceMove(slice, 1)
+      const scrambled = applyMove(solved, move)
+      const restored = applyMove(scrambled, inverse(move))
+      expect(cubesEqual(restored, solved)).toBe(true)
+    }
+  })
+
+  it('four quarter turns return to identity for every slice', () => {
+    const solved = createSolvedCube(3)
+
+    for (const slice of SLICES) {
+      let cube = solved
+      for (let i = 0; i < 4; i++) {
+        cube = applyMove(cube, sliceMove(slice, 1))
+      }
+      expect(cubesEqual(cube, solved)).toBe(true)
+    }
+  })
+
+  it('M moves the middle UF edge to DF with outward-facing stickers', () => {
+    const solved = createSolvedCube(3)
+    const next = applyMove(solved, sliceMove('M', 1))
+    const df = next.cubies.find((c) => c.x === 1 && c.y === 0 && c.z === 2)
+    expect(df?.stickers).toEqual({
+      F: 'white',
+      D: 'green',
+    })
+  })
+
+  it('leaves outer L and R face stickers unchanged after M', () => {
+    const solved = createSolvedCube(3)
+    const next = applyMove(solved, sliceMove('M', 1))
+
+    const leftCenter = next.cubies.find((c) => c.x === 0 && c.y === 1 && c.z === 1)
+    const rightCenter = next.cubies.find((c) => c.x === 2 && c.y === 1 && c.z === 1)
+
+    expect(leftCenter?.stickers).toEqual({ L: 'orange' })
+    expect(rightCenter?.stickers).toEqual({ R: 'red' })
+  })
+
+  it('keeps every sticker on an exterior face after slice turns', () => {
+    const solved = createSolvedCube(3)
+
+    for (const slice of SLICES) {
+      for (const turn of [1, 2, 3] as const) {
+        const cube = applyMove(solved, sliceMove(slice, turn))
+        for (const cubie of cube.cubies) {
+          const exterior = exteriorFaces(cubie, cube.size)
+          for (const stickerFace of Object.keys(cubie.stickers)) {
+            expect(exterior).toContain(stickerFace)
+          }
+        }
+      }
+    }
+  })
+
+  it('no-ops slice moves on 2x2 cubes', () => {
+    const solved = createSolvedCube(2)
+    const next = applyMove(solved, sliceMove('M', 1))
+    expect(cubesEqual(next, solved)).toBe(true)
   })
 })

@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import type { Face } from '../domain'
-import { isInFaceLayer } from '../domain'
+import type { Move } from '../domain'
+import { isInMoveLayer } from '../domain'
 import { useAnimationStore, useCubeStore } from '../state'
 import { AnimationController } from './AnimationController'
 import { CubieMesh } from './CubieMesh'
@@ -9,10 +9,10 @@ import { mapCubies, type RenderCubie } from './mapCubies'
 
 function splitCubies(
   cubies: RenderCubie[],
-  face: Face | undefined,
+  move: Move | undefined,
   size: number,
 ): { staticCubies: RenderCubie[]; layerCubies: RenderCubie[] } {
-  if (!face) {
+  if (!move) {
     return { staticCubies: cubies, layerCubies: [] }
   }
 
@@ -20,9 +20,9 @@ function splitCubies(
   const layerCubies: RenderCubie[] = []
 
   for (const cubie of cubies) {
-    const inLayer = isInFaceLayer(
+    const inLayer = isInMoveLayer(
       { x: cubie.grid.x, y: cubie.grid.y, z: cubie.grid.z, stickers: {} },
-      face,
+      move,
       size,
     )
     if (inLayer) {
@@ -45,14 +45,14 @@ export function CubeMesh() {
   const isAnimating = mode !== 'idle' && activeMove !== null
 
   const { staticCubies, layerCubies } = useMemo(
-    () => splitCubies(cubies, isAnimating ? activeMove?.face : undefined, cube.size),
-    [cubies, isAnimating, activeMove?.face, cube.size],
+    () => splitCubies(cubies, isAnimating ? activeMove ?? undefined : undefined, cube.size),
+    [cubies, isAnimating, activeMove, cube.size],
   )
 
-  const rotationAxis = activeMove ? getRotationAxis(activeMove.face) : null
+  const rotationAxis = activeMove ? getRotationAxis(activeMove) : null
   const angle = activeMove ? getAnimatedLayerAngle(activeMove, progress, mode) : 0
   const layerRotation = useMemo(
-    () => (activeMove ? getLayerEulerRotation(activeMove.face, angle) : null),
+    () => (activeMove ? getLayerEulerRotation(activeMove, angle) : null),
     [activeMove, angle],
   )
 

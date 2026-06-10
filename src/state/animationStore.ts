@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { faceMove, type Face, type Move } from '../domain'
+import { faceMove, sliceMove, type Move } from '../domain'
 import { getDragTurn } from '../render/layerRotation'
 import { useCubeStore } from './cubeStore'
 
@@ -13,7 +13,7 @@ interface AnimationStore {
   snapTarget: 0 | 1 | null
   requestMove: (move: Move) => void
   setProgress: (progress: number) => void
-  startDrag: (face: Face) => void
+  startDrag: (move: Move) => void
   updateDragProgress: (progress: number) => void
   endDrag: () => void
   completeAnimation: () => void
@@ -46,13 +46,13 @@ export const useAnimationStore = create<AnimationStore>((set, get) => ({
     set({ progress })
   },
 
-  startDrag: (face) => {
+  startDrag: (move) => {
     const { mode } = get()
     if (mode !== 'idle') return
 
     set({
       mode: 'dragging',
-      activeMove: faceMove(face, 1),
+      activeMove: move,
       progress: 0,
       isDragging: true,
       snapTarget: null,
@@ -70,10 +70,14 @@ export const useAnimationStore = create<AnimationStore>((set, get) => ({
     if (mode !== 'dragging' || !activeMove) return
 
     if (Math.abs(progress) >= 0.25) {
-      const turn = getDragTurn(activeMove.face, progress)
+      const turn = getDragTurn(activeMove, progress)
+      const nextMove =
+        activeMove.kind === 'face'
+          ? faceMove(activeMove.face, turn)
+          : sliceMove(activeMove.slice, turn)
       set({
         mode: 'playing',
-        activeMove: faceMove(activeMove.face, turn),
+        activeMove: nextMove,
         progress: Math.min(Math.abs(progress), 1),
         isDragging: false,
         snapTarget: 1,

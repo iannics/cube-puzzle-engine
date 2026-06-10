@@ -22,4 +22,8 @@ export interface CubeState {
 
 export type Turn = 1 | 2 | 3
 
-export type Move = { kind: 'face'; face: Face; turn: Turn }
+export type Slice = 'M' | 'E' | 'S'
+
+export type Move =
+  | { kind: 'face'; face: Face; turn: Turn }
+  | { kind: 'slice'; slice: Slice; turn: Turn }
