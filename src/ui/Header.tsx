@@ -1,4 +1,5 @@
 import { useUiStore } from '../state'
+import { TimerDisplay } from './TimerDisplay'
 
 export function Header() {
   const openShortcuts = useUiStore((state) => state.openShortcuts)
@@ -15,6 +16,7 @@ export function Header() {
         </h1>
         <span className="app-header__badge">3×3</span>
       </div>
+      <TimerDisplay />
       <div className="app-header__actions">
         <button
           type="button"

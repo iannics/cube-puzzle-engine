@@ -1,9 +1,11 @@
 import { useUiStore, type PanelTab } from '../state'
 import { MoveHistoryPanel } from './MoveHistoryPanel'
+import { LeaderboardPanel } from './LeaderboardPanel'
 import { PlaceholderPanel } from './PlaceholderPanel'
 
 const TABS: { id: PanelTab; label: string }[] = [
   { id: 'history', label: 'History' },
+  { id: 'leaderboard', label: 'Times' },
   { id: 'solver', label: 'Solver' },
   { id: 'tutorial', label: 'Tutorial' },
 ]
@@ -12,6 +14,8 @@ function PanelContent({ tab }: { tab: PanelTab }) {
   switch (tab) {
     case 'history':
       return <MoveHistoryPanel />
+    case 'leaderboard':
+      return <LeaderboardPanel />
     case 'solver':
       return (
         <PlaceholderPanel

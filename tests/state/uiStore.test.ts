@@ -5,7 +5,8 @@ describe('useUiStore', () => {
   beforeEach(() => {
     useUiStore.setState({
       shortcutsOpen: false,
-      cameraResetToken: 0,
+      cameraRequest: null,
+      preferredUpFace: 'U',
       hintDismissed: false,
     })
   })
@@ -17,10 +18,24 @@ describe('useUiStore', () => {
     expect(useUiStore.getState().shortcutsOpen).toBe(false)
   })
 
-  it('increments camera reset token', () => {
+  it('issues camera reset requests with incrementing tokens', () => {
     useUiStore.getState().requestCameraReset()
-    expect(useUiStore.getState().cameraResetToken).toBe(1)
-    useUiStore.getState().requestCameraReset()
-    expect(useUiStore.getState().cameraResetToken).toBe(2)
+    const first = useUiStore.getState().cameraRequest
+    expect(first?.mode).toBe('reset')
+    expect(first?.face).toBe('U')
+    expect(first?.token).toBe(1)
+
+    useUiStore.getState().requestCameraView('F')
+    const second = useUiStore.getState().cameraRequest
+    expect(second?.mode).toBe('view')
+    expect(second?.face).toBe('F')
+    expect(second?.token).toBe(2)
+  })
+
+  it('sets preferred up face and triggers camera reset', () => {
+    useUiStore.getState().setPreferredUpFace('R')
+    expect(useUiStore.getState().preferredUpFace).toBe('R')
+    expect(useUiStore.getState().cameraRequest?.face).toBe('R')
+    expect(useUiStore.getState().cameraRequest?.mode).toBe('reset')
   })
 })

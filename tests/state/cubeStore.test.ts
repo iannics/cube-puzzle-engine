@@ -18,6 +18,7 @@ describe('useCubeStore', () => {
       moveHistory: [],
       scrambleNotation: null,
       lastCommittedMove: null,
+      pendingScrambleReady: false,
     })
   })
 

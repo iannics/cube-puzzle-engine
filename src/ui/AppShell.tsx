@@ -1,5 +1,6 @@
 import { useUiStore } from '../state'
 import { CubeScene } from '../render'
+import { FaceOrientationPicker } from './FaceOrientationPicker'
 import { Header } from './Header'
 import { HintBar } from './HintBar'
 import { MobileSheet } from './MobileSheet'
@@ -7,6 +8,7 @@ import { MoveAnnouncer } from './MoveAnnouncer'
 import { OnboardingOverlay } from './OnboardingOverlay'
 import { ShortcutsDialog } from './ShortcutsDialog'
 import { SidePanel } from './SidePanel'
+import { SolveCompleteDialog } from './SolveCompleteDialog'
 import { Toolbar } from './Toolbar'
 import { useCubeKeyboard } from './useCubeKeyboard'
 
@@ -22,6 +24,7 @@ export function AppShell() {
       <div className="app-main">
         <div className="canvas-region">
           <CubeScene onDoubleClick={requestCameraReset} />
+          <FaceOrientationPicker />
           <HintBar />
         </div>
         {sidebarOpen && <SidePanel />}
@@ -29,6 +32,7 @@ export function AppShell() {
       <Toolbar />
       <MobileSheet />
       <ShortcutsDialog />
+      <SolveCompleteDialog />
       <OnboardingOverlay />
       <MoveAnnouncer />
     </div>

@@ -5,22 +5,35 @@ import {
   formatMoveSequence,
   generateScrambleMoves,
   inverse,
+  orientColorToUp,
+  type Color,
   type CubeState,
   type Move,
 } from '../domain'
 import { useAnimationStore } from './animationStore'
+import { useSessionStore } from './sessionStore'
+import { useUiStore } from './uiStore'
 
 interface CubeStore {
   cube: CubeState
   moveHistory: Move[]
   scrambleNotation: string | null
   lastCommittedMove: Move | null
+  pendingScrambleReady: boolean
   commitMove: (move: Move) => void
   reset: (size?: number) => void
   scramble: (moveCount?: number, animate?: boolean) => void
   undo: () => void
   setCube: (cube: CubeState) => void
   clearHistory: () => void
+  orientColorUp: (color: Color) => void
+  finishScrambleAnimation: () => void
+}
+
+function afterUserMoveCommitted(cube: CubeState, moveCount: number): void {
+  const session = useSessionStore.getState()
+  session.onFirstMove()
+  session.checkSolve(cube, moveCount, useUiStore.getState().scrambleMoveCount)
 }
 
 export const useCubeStore = create<CubeStore>((set, get) => ({
@@ -28,21 +41,31 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
   moveHistory: [],
   scrambleNotation: null,
   lastCommittedMove: null,
+  pendingScrambleReady: false,
 
-  commitMove: (move) =>
-    set((state) => ({
-      cube: applyMove(state.cube, move),
-      moveHistory: [...state.moveHistory, move],
-      lastCommittedMove: move,
-    })),
+  commitMove: (move) => {
+    const { cube, pendingScrambleReady, moveHistory } = get()
+    const nextCube = applyMove(cube, move)
+
+    if (pendingScrambleReady) {
+      set({ cube: nextCube, lastCommittedMove: move })
+      return
+    }
+
+    const nextHistory = [...moveHistory, move]
+    set({ cube: nextCube, moveHistory: nextHistory, lastCommittedMove: move })
+    afterUserMoveCommitted(nextCube, nextHistory.length)
+  },
 
   reset: (size = 3) => {
     useAnimationStore.getState().cancelAnimation()
+    useSessionStore.getState().onTimerReset()
     set({
       cube: createSolvedCube(size),
       moveHistory: [],
       scrambleNotation: null,
       lastCommittedMove: null,
+      pendingScrambleReady: false,
     })
   },
 
@@ -53,6 +76,7 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
     const notation = formatMoveSequence(moves)
 
     useAnimationStore.getState().cancelAnimation()
+    useSessionStore.getState().onTimerReset()
 
     if (animate) {
       set({
@@ -60,6 +84,7 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
         moveHistory: [],
         scrambleNotation: notation,
         lastCommittedMove: null,
+        pendingScrambleReady: true,
       })
       useAnimationStore.getState().enqueueMoves(moves)
       return
@@ -71,7 +96,9 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
       moveHistory: [],
       scrambleNotation: notation,
       lastCommittedMove: null,
+      pendingScrambleReady: false,
     })
+    useSessionStore.getState().onScrambleReady()
   },
 
   undo: () => {
@@ -90,4 +117,22 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
   setCube: (cube) => set({ cube }),
 
   clearHistory: () => set({ moveHistory: [], scrambleNotation: null, lastCommittedMove: null }),
+
+  orientColorUp: (color) => {
+    useAnimationStore.getState().cancelAnimation()
+    set((state) => ({
+      cube: orientColorToUp(state.cube, color),
+    }))
+  },
+
+  finishScrambleAnimation: () => {
+    const { pendingScrambleReady } = get()
+    if (!pendingScrambleReady) return
+    set({
+      pendingScrambleReady: false,
+      moveHistory: [],
+      lastCommittedMove: null,
+    })
+    useSessionStore.getState().onScrambleReady()
+  },
 }))

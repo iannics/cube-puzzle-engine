@@ -15,3 +15,5 @@ export { dragSignForFace, FACE_CW_SIGN, getMoveCwSign, isMirrorFace } from './ro
 export { formatMove, formatMoveSequence } from './notation'
 export { generateScrambleMoves, scrambleCube } from './scramble'
 export { deserializeCube, serializeCube } from './serialization'
+export { isSolved } from './solved'
+export { orientColorToUp, orientFaceToUp, rotateWholeCube, findFaceWithColor, getFaceCenterColor } from './wholeCubeRotation'

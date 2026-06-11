@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import type { Face } from '../domain/types'
 
 const ONBOARDING_KEY = 'cube-engine-onboarding-complete'
 
@@ -16,8 +17,15 @@ function browser(): BrowserGlobals {
   return globalThis as BrowserGlobals & typeof globalThis
 }
 
-export type PanelTab = 'history' | 'solver' | 'tutorial'
+export type PanelTab = 'history' | 'leaderboard' | 'solver' | 'tutorial'
 export type ScrambleLength = 15 | 20 | 25
+export type CameraMode = 'view' | 'reset'
+
+export interface CameraRequest {
+  face: Face
+  mode: CameraMode
+  token: number
+}
 
 function readOnboardingComplete(): boolean {
   try {
@@ -51,7 +59,8 @@ interface UiStore {
   skipResetConfirm: boolean
   reducedMotion: boolean
   highQuality: boolean
-  cameraResetToken: number
+  cameraRequest: CameraRequest | null
+  preferredUpFace: Face
   hintDismissed: boolean
 
   toggleSidebar: () => void
@@ -65,10 +74,19 @@ interface UiStore {
   setInstantScramble: (instant: boolean) => void
   setSkipResetConfirm: (skip: boolean) => void
   requestCameraReset: () => void
+  requestCameraView: (face: Face) => void
+  setPreferredUpFace: (face: Face) => void
   dismissHint: () => void
 }
 
-export const useUiStore = create<UiStore>((set) => ({
+let cameraToken = 0
+
+function nextCameraRequest(face: Face, mode: CameraMode): CameraRequest {
+  cameraToken += 1
+  return { face, mode, token: cameraToken }
+}
+
+export const useUiStore = create<UiStore>((set, get) => ({
   sidebarOpen: true,
   mobileSheetOpen: false,
   activePanelTab: 'history',
@@ -79,7 +97,8 @@ export const useUiStore = create<UiStore>((set) => ({
   skipResetConfirm: false,
   reducedMotion: detectReducedMotion(),
   highQuality: detectHighQuality(),
-  cameraResetToken: 0,
+  cameraRequest: null,
+  preferredUpFace: 'U',
   hintDismissed: false,
 
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
@@ -118,8 +137,18 @@ export const useUiStore = create<UiStore>((set) => ({
 
   setSkipResetConfirm: (skip) => set({ skipResetConfirm: skip }),
 
-  requestCameraReset: () =>
-    set((state) => ({ cameraResetToken: state.cameraResetToken + 1 })),
+  requestCameraReset: () => {
+    const { preferredUpFace } = get()
+    set({ cameraRequest: nextCameraRequest(preferredUpFace, 'reset') })
+  },
+
+  requestCameraView: (face) => {
+    set({ cameraRequest: nextCameraRequest(face, 'view') })
+  },
+
+  setPreferredUpFace: (face) => {
+    set({ preferredUpFace: face, cameraRequest: nextCameraRequest(face, 'reset') })
+  },
 
   dismissHint: () => set({ hintDismissed: true }),
 }))

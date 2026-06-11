@@ -124,6 +124,8 @@ export const useAnimationStore = create<AnimationStore>((set, get) => ({
       return
     }
 
+    useCubeStore.getState().finishScrambleAnimation()
+
     set({
       mode: 'idle',
       activeMove: null,
