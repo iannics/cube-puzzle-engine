@@ -1,6 +1,6 @@
 import type { Color } from '../domain/types'
-import { FACE_HEX } from '../render/colors'
-import { useAnimationStore, useCubeStore } from '../state'
+import { getCubeTheme } from '../render/themes'
+import { useAnimationStore, useCubeStore, useUiStore } from '../state'
 
 const COLOR_BUTTONS: { color: Color; label: string }[] = [
   { color: 'white', label: 'White up' },
@@ -14,6 +14,8 @@ const COLOR_BUTTONS: { color: Color; label: string }[] = [
 export function FaceOrientationPicker() {
   const mode = useAnimationStore((state) => state.mode)
   const orientColorUp = useCubeStore((state) => state.orientColorUp)
+  const cubeTheme = useUiStore((state) => state.cubeTheme)
+  const faceHex = getCubeTheme(cubeTheme).faceHex
   const isBusy = mode !== 'idle'
 
   return (
@@ -25,7 +27,7 @@ export function FaceOrientationPicker() {
             key={color}
             type="button"
             className="face-picker__face"
-            style={{ backgroundColor: FACE_HEX[color] }}
+            style={{ backgroundColor: faceHex[color] }}
             onClick={() => orientColorUp(color)}
             disabled={isBusy}
             title={label}

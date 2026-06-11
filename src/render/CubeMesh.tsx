@@ -2,6 +2,8 @@ import { useMemo } from 'react'
 import type { Move } from '../domain'
 import { isInMoveLayer } from '../domain'
 import { useAnimationStore, useCubeStore } from '../state'
+import { useUiStore } from '../state/uiStore'
+import { getCubeTheme } from './themes'
 import { AnimationController } from './AnimationController'
 import { CubieMesh } from './CubieMesh'
 import { IdleFloat } from './IdleFloat'
@@ -38,13 +40,15 @@ function splitCubies(
 
 export function CubeMesh() {
   const cube = useCubeStore((state) => state.cube)
+  const cubeTheme = useUiStore((state) => state.cubeTheme)
+  const cubieGap = getCubeTheme(cubeTheme).cubieGap
   const mode = useAnimationStore((state) => state.mode)
   const activeMove = useAnimationStore((state) => state.activeMove)
   const progress = useAnimationStore((state) => state.progress)
   const playStartProgress = useAnimationStore((state) => state.playStartProgress)
   const idleFloatEnabled = mode === 'idle'
 
-  const cubies = useMemo(() => mapCubies(cube), [cube])
+  const cubies = useMemo(() => mapCubies(cube, cubieGap), [cube, cubieGap])
   const isAnimating = mode !== 'idle' && activeMove !== null
 
   const { staticCubies, layerCubies } = useMemo(

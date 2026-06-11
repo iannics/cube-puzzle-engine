@@ -2,7 +2,7 @@ import type { Color, CubeState, Face } from '../domain/types'
 import type { CubieGrid } from './layerSelection'
 
 const CUBIE_SIZE = 0.95
-const CUBIE_GAP = 0.05
+const DEFAULT_CUBIE_GAP = 0.05
 
 export interface RenderCubie {
   /** Stable domain array index — does not change when cubie positions update. */
@@ -12,8 +12,14 @@ export interface RenderCubie {
   faceColors: Record<Face, Color | null>
 }
 
-function toWorldPosition(x: number, y: number, z: number, size: number): [number, number, number] {
-  const spacing = CUBIE_SIZE + CUBIE_GAP
+function toWorldPosition(
+  x: number,
+  y: number,
+  z: number,
+  size: number,
+  cubieGap: number,
+): [number, number, number] {
+  const spacing = CUBIE_SIZE + cubieGap
   const offset = (size - 1) / 2
   return [(x - offset) * spacing, (y - offset) * spacing, (z - offset) * spacing]
 }
@@ -29,7 +35,7 @@ function toFaceColors(stickers: Partial<Record<Face, Color>>): Record<Face, Colo
   }
 }
 
-export function mapCubies(state: CubeState): RenderCubie[] {
+export function mapCubies(state: CubeState, cubieGap = DEFAULT_CUBIE_GAP): RenderCubie[] {
   const result: RenderCubie[] = []
 
   state.cubies.forEach((cubie, index) => {
@@ -38,7 +44,7 @@ export function mapCubies(state: CubeState): RenderCubie[] {
     result.push({
       key: String(index),
       grid: { x: cubie.x, y: cubie.y, z: cubie.z },
-      position: toWorldPosition(cubie.x, cubie.y, cubie.z, state.size),
+      position: toWorldPosition(cubie.x, cubie.y, cubie.z, state.size, cubieGap),
       faceColors: toFaceColors(cubie.stickers),
     })
   })
@@ -46,4 +52,4 @@ export function mapCubies(state: CubeState): RenderCubie[] {
   return result
 }
 
-export { CUBIE_SIZE }
+export { CUBIE_SIZE, DEFAULT_CUBIE_GAP }

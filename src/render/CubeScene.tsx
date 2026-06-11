@@ -18,6 +18,7 @@ import {
 } from './cameraConfig'
 import { OrbitGuard } from './OrbitGuard'
 import { SceneEnvironment } from './SceneEnvironment'
+import { SceneLighting } from './SceneLighting'
 
 interface CubeSceneProps {
   onDoubleClick?: () => void
@@ -46,9 +47,7 @@ export function CubeScene({ onDoubleClick }: CubeSceneProps) {
       role="application"
       aria-label="3D Rubik's cube. Use keyboard or drag faces to turn."
     >
-      <ambientLight intensity={0.25} />
-      <directionalLight position={[6, 10, 4]} intensity={1.2} color="#fff8f0" />
-      <directionalLight position={[-4, 2, -3]} intensity={0.35} color="#c8d4ff" />
+      <SceneLighting />
       <SceneEnvironment />
       <CubeMesh />
       <OrbitControls

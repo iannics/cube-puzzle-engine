@@ -1,7 +1,21 @@
 import { create } from 'zustand'
 import type { Face } from '../domain/types'
+import type { CubeShapeId } from '../render/cubeShapes'
+import { DEFAULT_CUBE_SHAPE, getCubeShape, resolveCubeShapeId } from '../render/cubeShapes'
+import type { BackgroundThemeId, CubeThemeId } from '../render/themes'
+import {
+  DEFAULT_BACKGROUND_THEME,
+  DEFAULT_CUBE_THEME,
+  getBackgroundTheme,
+  getCubeTheme,
+  isBackgroundThemeId,
+  isCubeThemeId,
+} from '../render/themes'
 
 const ONBOARDING_KEY = 'cube-engine-onboarding-complete'
+const CUBE_THEME_KEY = 'cube-engine-cube-theme'
+const BACKGROUND_THEME_KEY = 'cube-engine-background-theme'
+const CUBE_SHAPE_KEY = 'cube-engine-cube-shape'
 
 type BrowserGlobals = {
   localStorage?: {
@@ -48,6 +62,39 @@ function detectHighQuality(): boolean {
   return cores >= 4 && !detectReducedMotion()
 }
 
+function readStoredCubeTheme(): CubeThemeId {
+  try {
+    const value = browser().localStorage?.getItem(CUBE_THEME_KEY)
+    if (value && isCubeThemeId(value)) return value
+  } catch {
+    // localStorage may be unavailable.
+  }
+  return DEFAULT_CUBE_THEME
+}
+
+function readStoredBackgroundTheme(): BackgroundThemeId {
+  try {
+    const value = browser().localStorage?.getItem(BACKGROUND_THEME_KEY)
+    if (value && isBackgroundThemeId(value)) return value
+  } catch {
+    // localStorage may be unavailable.
+  }
+  return DEFAULT_BACKGROUND_THEME
+}
+
+function readStoredCubeShape(): CubeShapeId {
+  try {
+    const value = browser().localStorage?.getItem(CUBE_SHAPE_KEY)
+    if (value) {
+      const resolved = resolveCubeShapeId(value)
+      if (resolved) return resolved
+    }
+  } catch {
+    // localStorage may be unavailable.
+  }
+  return DEFAULT_CUBE_SHAPE
+}
+
 interface UiStore {
   sidebarOpen: boolean
   mobileSheetOpen: boolean
@@ -62,6 +109,12 @@ interface UiStore {
   cameraRequest: CameraRequest | null
   preferredUpFace: Face
   hintDismissed: boolean
+  cubeTheme: CubeThemeId
+  backgroundTheme: BackgroundThemeId
+  cubeShape: CubeShapeId
+  themeAnnouncement: string | null
+  appearancePanelOpen: boolean
+  mobileAppearanceOpen: boolean
 
   toggleSidebar: () => void
   setMobileSheetOpen: (open: boolean) => void
@@ -77,6 +130,12 @@ interface UiStore {
   requestCameraView: (face: Face) => void
   setPreferredUpFace: (face: Face) => void
   dismissHint: () => void
+  setCubeTheme: (theme: CubeThemeId) => void
+  setBackgroundTheme: (theme: BackgroundThemeId) => void
+  setCubeShape: (shape: CubeShapeId) => void
+  toggleAppearancePanel: () => void
+  setAppearancePanelOpen: (open: boolean) => void
+  setMobileAppearanceOpen: (open: boolean) => void
 }
 
 let cameraToken = 0
@@ -100,6 +159,12 @@ export const useUiStore = create<UiStore>((set, get) => ({
   cameraRequest: null,
   preferredUpFace: 'U',
   hintDismissed: false,
+  cubeTheme: readStoredCubeTheme(),
+  backgroundTheme: readStoredBackgroundTheme(),
+  cubeShape: readStoredCubeShape(),
+  themeAnnouncement: null,
+  appearancePanelOpen: false,
+  mobileAppearanceOpen: false,
 
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
 
@@ -151,4 +216,62 @@ export const useUiStore = create<UiStore>((set, get) => ({
   },
 
   dismissHint: () => set({ hintDismissed: true }),
+
+  setCubeTheme: (theme) => {
+    try {
+      browser().localStorage?.setItem(CUBE_THEME_KEY, theme)
+    } catch {
+      // localStorage may be unavailable.
+    }
+    set({
+      cubeTheme: theme,
+      themeAnnouncement: `Cube theme: ${getCubeTheme(theme).name}.`,
+    })
+  },
+
+  setBackgroundTheme: (theme) => {
+    try {
+      browser().localStorage?.setItem(BACKGROUND_THEME_KEY, theme)
+    } catch {
+      // localStorage may be unavailable.
+    }
+    set({
+      backgroundTheme: theme,
+      themeAnnouncement: `Background theme: ${getBackgroundTheme(theme).name}.`,
+    })
+  },
+
+  setCubeShape: (shape) => {
+    try {
+      browser().localStorage?.setItem(CUBE_SHAPE_KEY, shape)
+    } catch {
+      // localStorage may be unavailable.
+    }
+    set({
+      cubeShape: shape,
+      themeAnnouncement: `Cube shape: ${getCubeShape(shape).name}.`,
+    })
+  },
+
+  toggleAppearancePanel: () => {
+    const isMobile =
+      browser().matchMedia?.('(max-width: 767px)').matches ?? false
+    const nextOpen = !get().appearancePanelOpen
+    set({
+      appearancePanelOpen: nextOpen,
+      mobileAppearanceOpen: isMobile && nextOpen,
+      mobileSheetOpen: isMobile && nextOpen ? false : get().mobileSheetOpen,
+    })
+  },
+
+  setAppearancePanelOpen: (open) => {
+    const isMobile =
+      browser().matchMedia?.('(max-width: 767px)').matches ?? false
+    set({
+      appearancePanelOpen: open,
+      mobileAppearanceOpen: isMobile && open,
+    })
+  },
+
+  setMobileAppearanceOpen: (open) => set({ mobileAppearanceOpen: open }),
 }))

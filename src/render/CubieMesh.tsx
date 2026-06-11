@@ -1,19 +1,10 @@
-import { RoundedBox } from '@react-three/drei'
 import { useMemo } from 'react'
 import type { Color, Face } from '../domain/types'
 import type { CubieUserData } from './canvasInteraction'
+import { useUiStore } from '../state/uiStore'
+import { CUBIE_MODEL_COMPONENTS } from './cubieModelMeshes'
 import { getBodyMaterial, getStickerMaterial } from './cubieMaterials'
-import {
-  BODY_SIZE,
-  getStickerTransform,
-  listStickerFaces,
-  STICKER_DEPTH,
-  STICKER_SIZE,
-} from './cubieFaces'
 import type { CubieGrid } from './layerSelection'
-
-const BODY_RADIUS = 0.035
-const STICKER_RADIUS = 0.008
 
 interface CubieMeshProps {
   position: [number, number, number]
@@ -25,14 +16,12 @@ interface CubieMeshProps {
 }
 
 export function CubieMesh({ position, grid, cubeSize, faceColors, isLayerActive = false }: CubieMeshProps) {
-  const bodyMaterial = useMemo(() => getBodyMaterial(), [])
+  const cubeTheme = useUiStore((state) => state.cubeTheme)
+  const cubeShape = useUiStore((state) => state.cubeShape)
+  const Model = CUBIE_MODEL_COMPONENTS[cubeShape]
+  const bodyMaterial = useMemo(() => getBodyMaterial(cubeTheme), [cubeTheme])
   const bodyRenderOrder = isLayerActive ? 2 : 0
   const stickerRenderOrder = isLayerActive ? 3 : 1
-
-  const stickerFaces = useMemo(
-    () => listStickerFaces(faceColors),
-    [faceColors.U, faceColors.D, faceColors.L, faceColors.R, faceColors.F, faceColors.B],
-  )
 
   const userData = useMemo<CubieUserData>(
     () => ({
@@ -51,33 +40,20 @@ export function CubieMesh({ position, grid, cubeSize, faceColors, isLayerActive 
     [grid, cubeSize, faceColors.U, faceColors.D, faceColors.L, faceColors.R, faceColors.F, faceColors.B],
   )
 
+  const getStickerMat = useMemo(
+    () => (color: Color) => getStickerMaterial(color, cubeTheme),
+    [cubeTheme],
+  )
+
   return (
     <group position={position} userData={userData}>
-      <RoundedBox
-        args={[BODY_SIZE, BODY_SIZE, BODY_SIZE]}
-        radius={BODY_RADIUS}
-        smoothness={4}
-        material={bodyMaterial}
-        renderOrder={bodyRenderOrder}
-        dispose={null}
+      <Model
+        faceColors={faceColors}
+        bodyMaterial={bodyMaterial}
+        getStickerMaterial={getStickerMat}
+        bodyRenderOrder={bodyRenderOrder}
+        stickerRenderOrder={stickerRenderOrder}
       />
-      {stickerFaces.map((face) => {
-        const transform = getStickerTransform(face)
-        const color = faceColors[face]!
-        return (
-          <RoundedBox
-            key={face}
-            args={[STICKER_SIZE, STICKER_SIZE, STICKER_DEPTH]}
-            radius={STICKER_RADIUS}
-            smoothness={2}
-            material={getStickerMaterial(color)}
-            position={transform.position}
-            quaternion={transform.quaternion}
-            renderOrder={stickerRenderOrder}
-            dispose={null}
-          />
-        )
-      })}
     </group>
   )
 }

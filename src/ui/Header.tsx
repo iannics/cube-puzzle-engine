@@ -7,6 +7,9 @@ export function Header() {
   const sidebarOpen = useUiStore((state) => state.sidebarOpen)
   const mobileSheetOpen = useUiStore((state) => state.mobileSheetOpen)
   const setMobileSheetOpen = useUiStore((state) => state.setMobileSheetOpen)
+  const toggleAppearancePanel = useUiStore((state) => state.toggleAppearancePanel)
+  const appearancePanelOpen = useUiStore((state) => state.appearancePanelOpen)
+  const mobileAppearanceOpen = useUiStore((state) => state.mobileAppearanceOpen)
 
   return (
     <header className="app-header">
@@ -37,6 +40,16 @@ export function Header() {
           title="Toggle panel"
         >
           ☰
+        </button>
+        <button
+          type="button"
+          className={`btn btn--icon${appearancePanelOpen || mobileAppearanceOpen ? ' btn--active' : ''}`}
+          onClick={toggleAppearancePanel}
+          aria-label={appearancePanelOpen || mobileAppearanceOpen ? 'Close appearance' : 'Appearance settings'}
+          aria-expanded={appearancePanelOpen || mobileAppearanceOpen}
+          title="Appearance"
+        >
+          ◐
         </button>
         <button
           type="button"

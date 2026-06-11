@@ -4,9 +4,13 @@ import { FaceOrientationPicker } from './FaceOrientationPicker'
 import { Header } from './Header'
 import { HintBar } from './HintBar'
 import { MobileSheet } from './MobileSheet'
+import { BackgroundThemeApplier } from './BackgroundThemeApplier'
 import { MoveAnnouncer } from './MoveAnnouncer'
+import { ThemeAnnouncer } from './ThemeAnnouncer'
 import { OnboardingOverlay } from './OnboardingOverlay'
 import { ShortcutsDialog } from './ShortcutsDialog'
+import { AppearanceMobileSheet } from './AppearanceMobileSheet'
+import { AppearanceSidebar } from './AppearanceSidebar'
 import { SidePanel } from './SidePanel'
 import { SolveCompleteDialog } from './SolveCompleteDialog'
 import { Toolbar } from './Toolbar'
@@ -16,6 +20,7 @@ export function AppShell() {
   useCubeKeyboard()
 
   const sidebarOpen = useUiStore((state) => state.sidebarOpen)
+  const appearancePanelOpen = useUiStore((state) => state.appearancePanelOpen)
   const requestCameraReset = useUiStore((state) => state.requestCameraReset)
 
   return (
@@ -27,14 +32,18 @@ export function AppShell() {
           <FaceOrientationPicker />
           <HintBar />
         </div>
+        {appearancePanelOpen && <AppearanceSidebar />}
         {sidebarOpen && <SidePanel />}
       </div>
       <Toolbar />
       <MobileSheet />
+      <AppearanceMobileSheet />
       <ShortcutsDialog />
       <SolveCompleteDialog />
       <OnboardingOverlay />
+      <BackgroundThemeApplier />
       <MoveAnnouncer />
+      <ThemeAnnouncer />
     </div>
   )
 }
