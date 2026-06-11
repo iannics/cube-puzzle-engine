@@ -1,7 +1,6 @@
 import * as THREE from 'three'
 import type { Face } from '../domain/types'
 
-export const DEFAULT_CAMERA_POSITION: [number, number, number] = [5.2, 4.2, 5.2]
 export const DEFAULT_CAMERA_FOV = 38
 export const DEFAULT_CAMERA_TARGET = new THREE.Vector3(0, 0, 0)
 
@@ -12,6 +11,17 @@ export const ORBIT_MAX_POLAR_ANGLE = Math.PI - 0.08
 export const ORBIT_DAMPING_FACTOR = 0.08
 
 export const CAMERA_RESET_DURATION_MS = 400
+
+function scaleToOrbitDistance(position: [number, number, number]): [number, number, number] {
+  const length = Math.hypot(position[0], position[1], position[2])
+  if (length === 0) return position
+  const scale = ORBIT_MAX_DISTANCE / length
+  return [position[0] * scale, position[1] * scale, position[2] * scale]
+}
+
+const DEFAULT_VIEW_DIRECTION: [number, number, number] = [5.2, 4.2, 5.2]
+
+export const DEFAULT_CAMERA_POSITION = scaleToOrbitDistance(DEFAULT_VIEW_DIRECTION)
 
 const VIEW_DISTANCE = 7.5
 
@@ -34,12 +44,12 @@ const FACE_UP_VECTORS: Record<Face, [number, number, number]> = {
 }
 
 const RESET_ANGLES: Record<Face, [number, number, number]> = {
-  U: [5.2, 4.2, 5.2],
-  D: [5.2, -4.2, 5.2],
-  F: [5.2, 4.2, 5.2],
-  B: [-5.2, 4.2, -5.2],
-  R: [5.2, 4.2, 5.2],
-  L: [-5.2, 4.2, 5.2],
+  U: scaleToOrbitDistance([5.2, 4.2, 5.2]),
+  D: scaleToOrbitDistance([5.2, -4.2, 5.2]),
+  F: scaleToOrbitDistance([5.2, 4.2, 5.2]),
+  B: scaleToOrbitDistance([-5.2, 4.2, -5.2]),
+  R: scaleToOrbitDistance([5.2, 4.2, 5.2]),
+  L: scaleToOrbitDistance([-5.2, 4.2, 5.2]),
 }
 
 export interface CameraPose {
