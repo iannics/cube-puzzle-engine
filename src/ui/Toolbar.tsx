@@ -4,7 +4,6 @@ export function Toolbar() {
   const mode = useAnimationStore((state) => state.mode)
   const scramble = useCubeStore((state) => state.scramble)
   const reset = useCubeStore((state) => state.reset)
-  const scrambleNotation = useCubeStore((state) => state.scrambleNotation)
   const scrambleMoveCount = useUiStore((state) => state.scrambleMoveCount)
   const instantScramble = useUiStore((state) => state.instantScramble)
   const skipResetConfirm = useUiStore((state) => state.skipResetConfirm)
@@ -23,15 +22,6 @@ export function Toolbar() {
   const handleReset = () => {
     if (!skipResetConfirm && !window.confirm('Reset to solved?')) return
     reset()
-  }
-
-  const handleCopyScramble = async () => {
-    if (!scrambleNotation) return
-    try {
-      await navigator.clipboard.writeText(scrambleNotation)
-    } catch {
-      // Clipboard may be unavailable.
-    }
   }
 
   return (
@@ -60,15 +50,6 @@ export function Toolbar() {
         title="Scramble cube (X)"
       >
         <span className="btn__label">Scramble</span>
-      </button>
-      <button
-        type="button"
-        className="btn"
-        onClick={handleCopyScramble}
-        disabled={!scrambleNotation}
-        title="Copy scramble"
-      >
-        <span className="btn__label">Copy</span>
       </button>
       <button
         type="button"
