@@ -46,7 +46,13 @@ describe('getAnimatedLayerAngle dragging', () => {
         const move = faceMove(face, 1)
         const dragAngle = getAnimatedLayerAngle(move, progress, 'dragging')
         const turn = getDragTurn(move, progress)
-        const playAngle = getAnimatedLayerAngle(faceMove(face, turn), Math.abs(progress), 'playing')
+        const handoff = Math.abs(progress)
+        const playAngle = getAnimatedLayerAngle(
+          faceMove(face, turn),
+          handoff,
+          'playing',
+          handoff,
+        )
         expect(dragAngle).toBeCloseTo(playAngle, 5)
       }
     }
@@ -58,7 +64,13 @@ describe('getAnimatedLayerAngle dragging', () => {
         const move = sliceMove(slice, 1)
         const dragAngle = getAnimatedLayerAngle(move, progress, 'dragging')
         const turn = getDragTurn(move, progress)
-        const playAngle = getAnimatedLayerAngle(sliceMove(slice, turn), Math.abs(progress), 'playing')
+        const handoff = Math.abs(progress)
+        const playAngle = getAnimatedLayerAngle(
+          sliceMove(slice, turn),
+          handoff,
+          'playing',
+          handoff,
+        )
         expect(dragAngle).toBeCloseTo(playAngle, 5)
       }
     }

@@ -1,16 +1,22 @@
 import * as THREE from 'three'
 import type { Color } from '../domain/types'
-import { FACE_HEX, HIDDEN_FACE_HEX } from './colors'
+import {
+  BODY_METALNESS,
+  BODY_ROUGHNESS,
+  FACE_HEX,
+  HIDDEN_FACE_HEX,
+  STICKER_ROUGHNESS,
+} from './colors'
 
-const stickerMaterials = new Map<Color, THREE.MeshBasicMaterial>()
+const stickerMaterials = new Map<Color, THREE.MeshStandardMaterial>()
 let bodyMaterial: THREE.MeshStandardMaterial | null = null
 
 export function getBodyMaterial(): THREE.MeshStandardMaterial {
   if (!bodyMaterial) {
     bodyMaterial = new THREE.MeshStandardMaterial({
       color: HIDDEN_FACE_HEX,
-      roughness: 0.8,
-      metalness: 0,
+      roughness: BODY_ROUGHNESS,
+      metalness: BODY_METALNESS,
       side: THREE.FrontSide,
       depthTest: true,
       depthWrite: true,
@@ -19,11 +25,13 @@ export function getBodyMaterial(): THREE.MeshStandardMaterial {
   return bodyMaterial
 }
 
-export function getStickerMaterial(color: Color): THREE.MeshBasicMaterial {
+export function getStickerMaterial(color: Color): THREE.MeshStandardMaterial {
   let material = stickerMaterials.get(color)
   if (!material) {
-    material = new THREE.MeshBasicMaterial({
+    material = new THREE.MeshStandardMaterial({
       color: FACE_HEX[color],
+      roughness: STICKER_ROUGHNESS,
+      metalness: 0,
       side: THREE.FrontSide,
       depthTest: true,
       depthWrite: true,

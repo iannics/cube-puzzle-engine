@@ -50,6 +50,7 @@ export function OrbitGuard() {
         clientX: event.clientX,
         clientY: event.clientY,
         pointerId: event.pointerId,
+        pointerType: event.pointerType,
       })
     }
 

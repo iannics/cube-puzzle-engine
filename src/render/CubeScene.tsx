@@ -1,22 +1,69 @@
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
+import { useCallback } from 'react'
+import type { WebGLRenderer } from 'three'
 import { useAnimationStore } from '../state'
+import { useUiStore } from '../state/uiStore'
+import { CameraReset } from './CameraReset'
+import { CanvasCursor } from './CanvasCursor'
 import { CubeMesh } from './CubeMesh'
+import {
+  DEFAULT_CAMERA_FOV,
+  DEFAULT_CAMERA_POSITION,
+  ORBIT_DAMPING_FACTOR,
+  ORBIT_MAX_DISTANCE,
+  ORBIT_MAX_POLAR_ANGLE,
+  ORBIT_MIN_DISTANCE,
+  ORBIT_MIN_POLAR_ANGLE,
+} from './cameraConfig'
 import { OrbitGuard } from './OrbitGuard'
+import { SceneEnvironment } from './SceneEnvironment'
 
-export function CubeScene() {
+interface CubeSceneProps {
+  onDoubleClick?: () => void
+}
+
+export function CubeScene({ onDoubleClick }: CubeSceneProps) {
   const isDragging = useAnimationStore((state) => state.isDragging)
+  const reducedMotion = useUiStore((state) => state.reducedMotion)
+
+  const handleCreated = useCallback(
+    ({ gl }: { gl: WebGLRenderer }) => {
+      gl.domElement.addEventListener('dblclick', () => {
+        onDoubleClick?.()
+      })
+    },
+    [onDoubleClick],
+  )
 
   return (
     <Canvas
-      camera={{ position: [4, 4, 4], fov: 45, near: 0.1, far: 100 }}
-      gl={{ logarithmicDepthBuffer: true }}
+      camera={{ position: DEFAULT_CAMERA_POSITION, fov: DEFAULT_CAMERA_FOV, near: 0.1, far: 100 }}
+      gl={{ logarithmicDepthBuffer: true, antialias: true }}
+      dpr={reducedMotion ? [1, 1] : [1, 1.5]}
       style={{ width: '100%', height: '100%' }}
+      onCreated={handleCreated}
+      role="application"
+      aria-label="3D Rubik's cube. Use keyboard or drag faces to turn."
     >
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[5, 8, 5]} intensity={1} />
+      <ambientLight intensity={0.25} />
+      <directionalLight position={[6, 10, 4]} intensity={1.2} color="#fff8f0" />
+      <directionalLight position={[-4, 2, -3]} intensity={0.35} color="#c8d4ff" />
+      <SceneEnvironment />
       <CubeMesh />
-      <OrbitControls makeDefault enablePan={false} enabled={!isDragging} />
+      <OrbitControls
+        makeDefault
+        enablePan={false}
+        enableDamping
+        dampingFactor={ORBIT_DAMPING_FACTOR}
+        minDistance={ORBIT_MIN_DISTANCE}
+        maxDistance={ORBIT_MAX_DISTANCE}
+        minPolarAngle={ORBIT_MIN_POLAR_ANGLE}
+        maxPolarAngle={ORBIT_MAX_POLAR_ANGLE}
+        enabled={!isDragging}
+      />
+      <CameraReset />
+      <CanvasCursor />
       <OrbitGuard />
     </Canvas>
   )

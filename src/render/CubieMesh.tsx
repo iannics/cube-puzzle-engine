@@ -1,3 +1,4 @@
+import { RoundedBox } from '@react-three/drei'
 import { useMemo } from 'react'
 import type { Color, Face } from '../domain/types'
 import type { CubieUserData } from './canvasInteraction'
@@ -10,6 +11,9 @@ import {
   STICKER_SIZE,
 } from './cubieFaces'
 import type { CubieGrid } from './layerSelection'
+
+const BODY_RADIUS = 0.035
+const STICKER_RADIUS = 0.008
 
 interface CubieMeshProps {
   position: [number, number, number]
@@ -49,23 +53,29 @@ export function CubieMesh({ position, grid, cubeSize, faceColors, isLayerActive 
 
   return (
     <group position={position} userData={userData}>
-      <mesh material={bodyMaterial} renderOrder={bodyRenderOrder} dispose={null}>
-        <boxGeometry args={[BODY_SIZE, BODY_SIZE, BODY_SIZE]} />
-      </mesh>
+      <RoundedBox
+        args={[BODY_SIZE, BODY_SIZE, BODY_SIZE]}
+        radius={BODY_RADIUS}
+        smoothness={4}
+        material={bodyMaterial}
+        renderOrder={bodyRenderOrder}
+        dispose={null}
+      />
       {stickerFaces.map((face) => {
         const transform = getStickerTransform(face)
         const color = faceColors[face]!
         return (
-          <mesh
+          <RoundedBox
             key={face}
+            args={[STICKER_SIZE, STICKER_SIZE, STICKER_DEPTH]}
+            radius={STICKER_RADIUS}
+            smoothness={2}
             material={getStickerMaterial(color)}
             position={transform.position}
             quaternion={transform.quaternion}
             renderOrder={stickerRenderOrder}
             dispose={null}
-          >
-            <boxGeometry args={[STICKER_SIZE, STICKER_SIZE, STICKER_DEPTH]} />
-          </mesh>
+          />
         )
       })}
     </group>

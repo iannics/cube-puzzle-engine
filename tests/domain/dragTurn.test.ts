@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { faceMove, getDragTurn, sliceMove, type Face } from '../../src/domain'
-
-const FACES: Face[] = ['U', 'D', 'L', 'R', 'F', 'B']
+import { faceMove, getDragTurn, sliceMove } from '../../src/domain'
 
 describe('getDragTurn', () => {
   it('maps positive progress to turn 1 on R and turn 3 on L', () => {

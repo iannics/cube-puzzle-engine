@@ -9,4 +9,7 @@ export const FACE_HEX: Record<Color, string> = {
   green: '#009b48',
 }
 
-export const HIDDEN_FACE_HEX = '#1a1a1a'
+export const HIDDEN_FACE_HEX = '#12151c'
+export const BODY_ROUGHNESS = 0.45
+export const BODY_METALNESS = 0.05
+export const STICKER_ROUGHNESS = 0.35

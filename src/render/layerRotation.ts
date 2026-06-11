@@ -8,6 +8,7 @@ import {
   type Face,
   type Move,
 } from '../domain'
+import { easeOutCubic } from './animationEasing'
 
 const FACE_NORMALS: Record<Face, THREE.Vector3> = {
   R: new THREE.Vector3(1, 0, 0),
@@ -36,16 +37,32 @@ function getCanonicalAxis(move: Move): THREE.Vector3 {
   return new THREE.Vector3(Math.abs(axis.x), Math.abs(axis.y), Math.abs(axis.z))
 }
 
-export function getMoveAngle(move: Move, progress: number): number {
+export function mapPlayingVisualProgress(linearProgress: number, startProgress: number): number {
+  if (startProgress >= 1) return 1
+  const segment = (linearProgress - startProgress) / (1 - startProgress)
+  const easedSegment = easeOutCubic(Math.max(0, Math.min(1, segment)))
+  return startProgress + (1 - startProgress) * easedSegment
+}
+
+export function getMoveAngle(
+  move: Move,
+  progress: number,
+  startProgress = 0,
+  eased = true,
+): number {
+  const visualProgress = eased
+    ? mapPlayingVisualProgress(progress, startProgress)
+    : progress
   const sign = getMoveCwSign(move)
   const quarterTurns = move.turn === 2 ? 2 : move.turn === 3 ? -1 : 1
-  return sign * quarterTurns * progress * (Math.PI / 2)
+  return sign * quarterTurns * visualProgress * (Math.PI / 2)
 }
 
 export function getAnimatedLayerAngle(
   move: Move,
   progress: number,
   mode: 'idle' | 'playing' | 'dragging',
+  playStartProgress = 0,
 ): number {
   if (mode === 'dragging') {
     const face = getDragReferenceFace(move)
@@ -56,7 +73,7 @@ export function getAnimatedLayerAngle(
     return angle
   }
 
-  return getMoveAngle(move, progress)
+  return getMoveAngle(move, progress, playStartProgress, true)
 }
 
 /**

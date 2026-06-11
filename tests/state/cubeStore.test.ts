@@ -13,7 +13,12 @@ function cubesEqual(a: CubeState, b: CubeState): boolean {
 
 describe('useCubeStore', () => {
   beforeEach(() => {
-    useCubeStore.setState({ cube: createSolvedCube(3) })
+    useCubeStore.setState({
+      cube: createSolvedCube(3),
+      moveHistory: [],
+      scrambleNotation: null,
+      lastCommittedMove: null,
+    })
   })
 
   it('starts with a solved 3x3 cube', () => {
@@ -33,5 +38,27 @@ describe('useCubeStore', () => {
     useCubeStore.getState().reset(2)
     expect(useCubeStore.getState().cube.size).toBe(2)
     expect(useCubeStore.getState().cube.cubies).toHaveLength(8)
+  })
+
+  it('tracks move history on commitMove', () => {
+    useCubeStore.getState().commitMove(faceMove('R', 1))
+    expect(useCubeStore.getState().moveHistory).toHaveLength(1)
+    expect(useCubeStore.getState().lastCommittedMove).toEqual(faceMove('R', 1))
+  })
+
+  it('scramble sets notation and clears history', () => {
+    useCubeStore.getState().commitMove(faceMove('U', 1))
+    useCubeStore.getState().scramble(10, true)
+    expect(useCubeStore.getState().moveHistory).toHaveLength(0)
+    expect(useCubeStore.getState().scrambleNotation?.split(' ')).toHaveLength(10)
+  })
+
+  it('undo reverts the last move', () => {
+    useCubeStore.getState().commitMove(faceMove('R', 1))
+    const afterR = useCubeStore.getState().cube
+    useCubeStore.getState().undo()
+    expect(useCubeStore.getState().cube).toEqual(createSolvedCube(3))
+    expect(useCubeStore.getState().moveHistory).toHaveLength(0)
+    expect(afterR).not.toEqual(createSolvedCube(3))
   })
 })

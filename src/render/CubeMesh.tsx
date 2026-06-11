@@ -4,6 +4,7 @@ import { isInMoveLayer } from '../domain'
 import { useAnimationStore, useCubeStore } from '../state'
 import { AnimationController } from './AnimationController'
 import { CubieMesh } from './CubieMesh'
+import { IdleFloat } from './IdleFloat'
 import { getAnimatedLayerAngle, getLayerEulerRotation, getRotationAxis } from './layerRotation'
 import { mapCubies, type RenderCubie } from './mapCubies'
 
@@ -40,6 +41,8 @@ export function CubeMesh() {
   const mode = useAnimationStore((state) => state.mode)
   const activeMove = useAnimationStore((state) => state.activeMove)
   const progress = useAnimationStore((state) => state.progress)
+  const playStartProgress = useAnimationStore((state) => state.playStartProgress)
+  const idleFloatEnabled = mode === 'idle'
 
   const cubies = useMemo(() => mapCubies(cube), [cube])
   const isAnimating = mode !== 'idle' && activeMove !== null
@@ -50,14 +53,16 @@ export function CubeMesh() {
   )
 
   const rotationAxis = activeMove ? getRotationAxis(activeMove) : null
-  const angle = activeMove ? getAnimatedLayerAngle(activeMove, progress, mode) : 0
+  const angle = activeMove
+    ? getAnimatedLayerAngle(activeMove, progress, mode, playStartProgress)
+    : 0
   const layerRotation = useMemo(
     () => (activeMove ? getLayerEulerRotation(activeMove, angle) : null),
     [activeMove, angle],
   )
 
   return (
-    <group>
+    <IdleFloat enabled={idleFloatEnabled}>
       <AnimationController />
       <group renderOrder={0}>
         {staticCubies.map((cubie) => (
@@ -84,6 +89,6 @@ export function CubeMesh() {
           ))}
         </group>
       )}
-    </group>
+    </IdleFloat>
   )
 }

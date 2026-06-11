@@ -34,16 +34,16 @@ function pickRandomMove(size: number, rng: () => number): Move {
   return pool[randomInt(pool.length, rng)]
 }
 
-export function scrambleCube(
+export function generateScrambleMoves(
   size: number,
   moveCount: number,
   rng: () => number = Math.random,
-): CubeState {
+): Move[] {
   if (!Number.isInteger(moveCount) || moveCount < 0) {
     throw new Error(`moveCount must be a non-negative integer, got ${moveCount}`)
   }
 
-  let cube = createSolvedCube(size)
+  const moves: Move[] = []
   let lastMove: Move | null = null
 
   for (let i = 0; i < moveCount; i++) {
@@ -53,9 +53,18 @@ export function scrambleCube(
       move = pickRandomMove(size, rng)
       attempts++
     }
-    cube = applyMove(cube, move)
+    moves.push(move)
     lastMove = move
   }
 
-  return cube
+  return moves
+}
+
+export function scrambleCube(
+  size: number,
+  moveCount: number,
+  rng: () => number = Math.random,
+): CubeState {
+  const moves = generateScrambleMoves(size, moveCount, rng)
+  return moves.reduce((cube, move) => applyMove(cube, move), createSolvedCube(size))
 }

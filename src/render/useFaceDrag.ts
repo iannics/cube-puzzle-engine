@@ -6,7 +6,12 @@ import { useAnimationStore } from '../state'
 import { dragProgressFromScreenDelta, getDragReferenceFace, getFaceNormal } from './layerRotation'
 import { selectMoveFromDrag, type CubieGrid } from './layerSelection'
 
-const DRAG_START_THRESHOLD_PX = 4
+const DRAG_START_THRESHOLD_MOUSE_PX = 4
+const DRAG_START_THRESHOLD_TOUCH_PX = 8
+
+function dragStartThreshold(pointerType: string): number {
+  return pointerType === 'touch' ? DRAG_START_THRESHOLD_TOUCH_PX : DRAG_START_THRESHOLD_MOUSE_PX
+}
 
 export interface FaceDragStart {
   grid: CubieGrid
@@ -15,6 +20,7 @@ export interface FaceDragStart {
   clientX: number
   clientY: number
   pointerId: number
+  pointerType: string
 }
 
 interface DragState {
@@ -29,6 +35,7 @@ interface DragState {
   lastY: number
   accumulated: number
   startedInStore: boolean
+  dragThresholdPx: number
 }
 
 export function useFaceDrag() {
@@ -83,6 +90,7 @@ export function useFaceDrag() {
         lastY: start.clientY,
         accumulated: 0,
         startedInStore: false,
+        dragThresholdPx: dragStartThreshold(start.pointerType),
       }
 
       const onPointerMove = (moveEvent: PointerEvent) => {
@@ -92,7 +100,7 @@ export function useFaceDrag() {
         if (!drag.startedInStore) {
           const totalDx = moveEvent.clientX - drag.startX
           const totalDy = moveEvent.clientY - drag.startY
-          if (Math.hypot(totalDx, totalDy) < DRAG_START_THRESHOLD_PX) return
+          if (Math.hypot(totalDx, totalDy) < drag.dragThresholdPx) return
 
           const move = selectMoveFromDrag(
             drag.grid,

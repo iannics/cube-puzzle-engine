@@ -12,5 +12,6 @@ export {
   sliceMove,
 } from './moves'
 export { dragSignForFace, FACE_CW_SIGN, getMoveCwSign, isMirrorFace } from './rotationSigns'
-export { scrambleCube } from './scramble'
+export { formatMove, formatMoveSequence } from './notation'
+export { generateScrambleMoves, scrambleCube } from './scramble'
 export { deserializeCube, serializeCube } from './serialization'

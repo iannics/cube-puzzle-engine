@@ -1,73 +1,64 @@
-# React + TypeScript + Vite
+# Cube Puzzle Engine
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Interactive 3×3 Rubik's cube built with TypeScript, React, React Three Fiber, and Zustand.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Animated face and slice moves with drag-to-turn and keyboard input
+- WCA-accurate sticker colors and speedcubing notation
+- Scramble, undo, move history, and reset controls
+- Portfolio-quality 3D presentation with PBR materials, contact shadows, and tuned lighting
+- Keyboard-first accessibility with screen reader move announcements
 
-## React Compiler
+## Quick start
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Open the local URL shown in the terminal.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Controls
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+See [docs/CONTROLS.md](docs/CONTROLS.md) for the full reference.
+
+| Action | Input |
+|--------|-------|
+| Turn face | Drag a sticker |
+| Orbit | Drag background |
+| Face move | `R L U D F B` |
+| Prime | `Shift` + face |
+| Half turn | `2` then face |
+| Scramble | `X` or toolbar |
+| Undo | `Ctrl+Z` |
+| Help | `?` |
+
+## Accessibility
+
+- Keyboard shortcuts cover all primary puzzle actions.
+- Press `?` in-app for the shortcut list.
+- `prefers-reduced-motion` disables idle float and shortens animations.
+
+## Architecture
+
+| Layer | Responsibility |
+|-------|----------------|
+| `domain/` | Pure cube logic — moves, scramble, notation |
+| `state/` | Zustand orchestration — cube, animation, UI |
+| `render/` | R3F visualization |
+| `ui/` | DOM chrome — panels, toolbar, onboarding |
+| `solver/` | Solver stub (future) |
+
+## Scripts
+
+```bash
+npm run dev      # development server
+npm run build    # production build
+npm run test     # unit tests
+npm run lint     # ESLint
 ```
+
+## Hero screenshot
+
+The default camera frames the U–F–R inspection angle at 38° FOV with studio lighting — suitable for portfolio screenshots without additional setup.

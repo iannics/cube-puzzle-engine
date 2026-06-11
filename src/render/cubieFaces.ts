@@ -5,7 +5,7 @@ import { CUBIE_SIZE } from './mapCubies'
 export const MATERIAL_ORDER: Face[] = ['R', 'L', 'U', 'D', 'F', 'B']
 
 /** Slightly smaller than cubie body so gaps remain visible between stickers. */
-export const STICKER_SIZE = 0.88
+export const STICKER_SIZE = 0.9
 
 /** Gap between cubie center shell and sticker outer surface. */
 const STICKER_OFFSET = 0.01

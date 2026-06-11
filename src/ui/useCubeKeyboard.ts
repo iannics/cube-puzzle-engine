@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { faceMove, sliceMove, type Face, type Move, type Slice } from '../domain'
-import { useAnimationStore } from '../state'
+import { useAnimationStore, useCubeStore, useUiStore } from '../state'
 
 const KEY_TO_FACE: Record<string, Face> = {
   r: 'R',
@@ -23,9 +23,9 @@ function isTypingTarget(target: EventTarget | null): boolean {
   return tag === 'INPUT' || tag === 'TEXTAREA' || target.isContentEditable
 }
 
-function keyToMove(key: string, shiftKey: boolean): Move | null {
+function keyToMove(key: string, shiftKey: boolean, halfTurn: boolean): Move | null {
   const lower = key.toLowerCase()
-  const turn = shiftKey ? 3 : 1
+  const turn = halfTurn ? 2 : shiftKey ? 3 : 1
   const face = KEY_TO_FACE[lower]
   if (face) return faceMove(face, turn)
   const slice = KEY_TO_SLICE[lower]
@@ -35,12 +35,72 @@ function keyToMove(key: string, shiftKey: boolean): Move | null {
 
 export function useCubeKeyboard(): void {
   const requestMove = useAnimationStore((state) => state.requestMove)
+  const scramble = useCubeStore((state) => state.scramble)
+  const reset = useCubeStore((state) => state.reset)
+  const undo = useCubeStore((state) => state.undo)
+  const scrambleMoveCount = useUiStore((state) => state.scrambleMoveCount)
+  const instantScramble = useUiStore((state) => state.instantScramble)
+  const openShortcuts = useUiStore((state) => state.openShortcuts)
+  const closeShortcuts = useUiStore((state) => state.closeShortcuts)
+  const shortcutsOpen = useUiStore((state) => state.shortcutsOpen)
+  const requestCameraReset = useUiStore((state) => state.requestCameraReset)
+  const skipResetConfirm = useUiStore((state) => state.skipResetConfirm)
 
   useEffect(() => {
+    let halfTurnNext = false
+
     const onKeyDown = (event: KeyboardEvent) => {
       if (isTypingTarget(event.target)) return
 
-      const move = keyToMove(event.key, event.shiftKey)
+      if (shortcutsOpen && event.key === 'Escape') {
+        event.preventDefault()
+        closeShortcuts()
+        return
+      }
+
+      if (event.key === '?' || (event.key === '/' && event.shiftKey)) {
+        event.preventDefault()
+        openShortcuts()
+        return
+      }
+
+      if (event.key === 'v' || event.key === 'V') {
+        event.preventDefault()
+        requestCameraReset()
+        return
+      }
+
+      if (event.key === 'x' || event.key === 'X') {
+        if (event.ctrlKey || event.metaKey) return
+        event.preventDefault()
+        if (useAnimationStore.getState().mode === 'idle') {
+          scramble(scrambleMoveCount, !instantScramble)
+        }
+        return
+      }
+
+      if (event.key === '0') {
+        event.preventDefault()
+        if (!skipResetConfirm && !window.confirm('Reset to solved?')) return
+        reset()
+        return
+      }
+
+      if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
+        event.preventDefault()
+        if (useAnimationStore.getState().mode === 'idle') {
+          undo()
+        }
+        return
+      }
+
+      if (event.key === '2') {
+        halfTurnNext = true
+        return
+      }
+
+      const move = keyToMove(event.key, event.shiftKey, halfTurnNext)
+      halfTurnNext = false
       if (!move) return
 
       event.preventDefault()
@@ -49,5 +109,17 @@ export function useCubeKeyboard(): void {
 
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [requestMove])
+  }, [
+    requestMove,
+    scramble,
+    reset,
+    undo,
+    scrambleMoveCount,
+    instantScramble,
+    openShortcuts,
+    closeShortcuts,
+    shortcutsOpen,
+    requestCameraReset,
+    skipResetConfirm,
+  ])
 }

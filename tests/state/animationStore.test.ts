@@ -4,13 +4,20 @@ import { useAnimationStore } from '../../src/state/animationStore'
 import { useCubeStore } from '../../src/state/cubeStore'
 
 function resetStores(): void {
-  useCubeStore.setState({ cube: createSolvedCube(3) })
+  useCubeStore.setState({
+    cube: createSolvedCube(3),
+    moveHistory: [],
+    scrambleNotation: null,
+    lastCommittedMove: null,
+  })
   useAnimationStore.setState({
     mode: 'idle',
     activeMove: null,
     progress: 0,
+    playStartProgress: 0,
     isDragging: false,
     snapTarget: null,
+    moveQueue: [],
   })
 }
 
@@ -91,5 +98,23 @@ describe('useAnimationStore', () => {
     expect(useAnimationStore.getState().progress).toBe(1)
     useAnimationStore.getState().updateDragProgress(-3)
     expect(useAnimationStore.getState().progress).toBe(-1)
+  })
+
+  it('enqueueMoves plays the first move and queues the rest', () => {
+    useAnimationStore.getState().enqueueMoves([faceMove('R', 1), faceMove('U', 1)])
+    const state = useAnimationStore.getState()
+    expect(state.mode).toBe('playing')
+    expect(state.activeMove).toEqual(faceMove('R', 1))
+    expect(state.moveQueue).toEqual([faceMove('U', 1)])
+  })
+
+  it('completeAnimation drains the move queue', () => {
+    useAnimationStore.getState().enqueueMoves([faceMove('R', 1), faceMove('U', 1)])
+    useAnimationStore.getState().completeAnimation()
+    expect(useAnimationStore.getState().mode).toBe('playing')
+    expect(useAnimationStore.getState().activeMove).toEqual(faceMove('U', 1))
+    useAnimationStore.getState().completeAnimation()
+    expect(useAnimationStore.getState().mode).toBe('idle')
+    expect(useCubeStore.getState().moveHistory).toHaveLength(2)
   })
 })

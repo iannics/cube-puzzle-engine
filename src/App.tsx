@@ -1,10 +1,7 @@
-import { CubeScene } from './render'
-import { useCubeKeyboard } from './ui'
+import { AppShell } from './ui'
 
 function App() {
-  useCubeKeyboard()
-
-  return <CubeScene />
+  return <AppShell />
 }
 
 export default App
