@@ -21,10 +21,10 @@ Use Zustand.
 
 Separate stores:
 
-- cubeStore
-- animationStore
-- uiStore
-- tutorialStore
+- `cubeStore` — implemented (`src/state/cubeStore.ts`)
+- `animationStore` — implemented (`src/state/animationStore.ts`)
+- `uiStore` — planned (general UI chrome, settings, panels)
+- `tutorialStore` — planned (tutorial step progress and gating)
 
 Business logic remains in domain modules.
 

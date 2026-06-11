@@ -1,6 +1,5 @@
 import { create } from 'zustand'
-import { faceMove, sliceMove, type Move } from '../domain'
-import { getDragTurn } from '../render/layerRotation'
+import { faceMove, getDragTurn, sliceMove, type Move } from '../domain'
 import { useCubeStore } from './cubeStore'
 
 export type AnimationMode = 'idle' | 'playing' | 'dragging'

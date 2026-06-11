@@ -20,16 +20,18 @@ The project is developed by a single engineer and does not require the complexit
 
 Use a Modular Monolith organized around domains.
 
-Top-level modules:
+Top-level source modules (under `src/`):
 
-- cube
-- solver
-- rendering
-- tutorial
-- ui
-- shared
+- `domain` — cube engine (pure logic; ADR concept: "cube")
+- `solver` — planned; algorithms read domain state and output moves
+- `render` — Three.js / R3F visualization (ADR concept: "rendering")
+- `state` — Zustand orchestration
+- `ui` — React input and chrome
+- `tutorial` — planned; tutorial content and step logic
 
 Domain boundaries are enforced through folder structure and import rules.
+
+Commit scopes use `cube` for domain changes and `rendering` for `src/render/` changes.
 
 ## Consequences
 

@@ -88,18 +88,6 @@ function getLayerSpec(move: Move): LayerSpec {
   return move.kind === 'face' ? FACE_SPECS[move.face] : SLICE_SPECS[move.slice]
 }
 
-export function getFaceRotationAxis(face: Face): Axis {
-  return FACE_SPECS[face].axis
-}
-
-export function getSliceRotationAxis(slice: Slice): Axis {
-  return SLICE_SPECS[slice].axis
-}
-
-export function getMoveRotationAxis(move: Move): Axis {
-  return getLayerSpec(move).axis
-}
-
 export function isInFaceLayer(cubie: CubieState, face: Face, size: number): boolean {
   const spec = FACE_SPECS[face]
   return cubie[spec.axis] === spec.layerIndex(size)

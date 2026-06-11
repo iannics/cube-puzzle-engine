@@ -1,11 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import * as THREE from 'three'
-import {
-  getApplicableSlices,
-  getCandidateMoves,
-  getOuterFaces,
-  selectMoveFromDrag,
-} from '../../src/render/layerSelection'
+import { getCandidateMovesForCubie } from '../../src/domain'
+import { selectMoveFromDrag } from '../../src/render/layerSelection'
 
 describe('layerSelection', () => {
   const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100)
@@ -16,7 +12,11 @@ describe('layerSelection', () => {
   const anchor = new THREE.Vector3(1.4, 0, 0)
 
   it('returns only outer face for a corner cubie shell position', () => {
-    expect(getOuterFaces({ x: 2, y: 2, z: 2 }, 3)).toEqual(['R', 'U', 'F'])
+    const moves = getCandidateMovesForCubie(2, 2, 2, 3)
+    const faces = moves
+      .filter((m) => m.kind === 'face')
+      .map((m) => (m.kind === 'face' ? m.face : ''))
+    expect(faces).toEqual(['U', 'R', 'F'])
   })
 
   it('picks S for vertical drag on the right shell center', () => {
@@ -42,8 +42,12 @@ describe('layerSelection', () => {
   })
 
   it('includes middle slices for center-layer cubies on a 3x3', () => {
-    expect(getApplicableSlices({ x: 1, y: 2, z: 1 }, 3)).toEqual(['M', 'S'])
-    expect(getCandidateMoves({ x: 1, y: 2, z: 1 }, 3)).toHaveLength(3)
+    const moves = getCandidateMovesForCubie(1, 2, 1, 3)
+    const slices = moves
+      .filter((m) => m.kind === 'slice')
+      .map((m) => (m.kind === 'slice' ? m.slice : ''))
+    expect(slices).toEqual(['M', 'S'])
+    expect(moves).toHaveLength(3)
   })
 
   it('picks M over U for horizontal drag on the top-middle edge', () => {

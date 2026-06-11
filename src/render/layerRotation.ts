@@ -1,5 +1,13 @@
 import * as THREE from 'three'
-import type { Face, Move, Slice } from '../domain'
+import {
+  dragSignForFace,
+  FACE_CW_SIGN,
+  getDragReferenceFace,
+  getMoveCwSign,
+  invertDragRelease,
+  type Face,
+  type Move,
+} from '../domain'
 
 const FACE_NORMALS: Record<Face, THREE.Vector3> = {
   R: new THREE.Vector3(1, 0, 0),
@@ -10,49 +18,16 @@ const FACE_NORMALS: Record<Face, THREE.Vector3> = {
   B: new THREE.Vector3(0, 0, -1),
 }
 
-// Clockwise turn sign when viewed from outside the face (matches domain notation).
-export const FACE_CW_SIGN: Record<Face, number> = {
-  R: -1,
-  L: 1,
-  U: -1,
-  D: 1,
-  F: -1,
-  B: 1,
-}
-
-const SLICE_CW_SIGN: Record<Slice, number> = {
-  M: FACE_CW_SIGN.L,
-  E: FACE_CW_SIGN.D,
-  S: FACE_CW_SIGN.F,
-}
-
-const SLICE_DRAG_FACE: Record<Slice, Face> = {
-  M: 'L',
-  E: 'D',
-  S: 'F',
-}
-
 const DRAG_SENSITIVITY = 0.02
+
+export { FACE_CW_SIGN, getDragReferenceFace }
 
 export function getFaceNormal(face: Face): THREE.Vector3 {
   return FACE_NORMALS[face].clone()
 }
 
-export function getDragReferenceFace(move: Move): Face {
-  return move.kind === 'face' ? move.face : SLICE_DRAG_FACE[move.slice]
-}
-
-function getMoveCwSign(move: Move): number {
-  return move.kind === 'face' ? FACE_CW_SIGN[move.face] : SLICE_CW_SIGN[move.slice]
-}
-
 export function getRotationAxis(move: Move): THREE.Vector3 {
   return getFaceNormal(getDragReferenceFace(move))
-}
-
-function isMirrorFace(face: Face): boolean {
-  const axis = FACE_NORMALS[face]
-  return axis.x < 0 || axis.y < 0 || axis.z < 0
 }
 
 function getCanonicalAxis(move: Move): THREE.Vector3 {
@@ -61,28 +36,10 @@ function getCanonicalAxis(move: Move): THREE.Vector3 {
   return new THREE.Vector3(Math.abs(axis.x), Math.abs(axis.y), Math.abs(axis.z))
 }
 
-/**
- * Drag torque sign: mirror faces (L, D, B) use the partner-face sign so screen
- * motion matches layer motion the same way it does on R, U, and F.
- */
-function dragSignForFace(face: Face): number {
-  return isMirrorFace(face) ? -FACE_CW_SIGN[face] : FACE_CW_SIGN[face]
-}
-
 export function getMoveAngle(move: Move, progress: number): number {
   const sign = getMoveCwSign(move)
   const quarterTurns = move.turn === 2 ? 2 : move.turn === 3 ? -1 : 1
   return sign * quarterTurns * progress * (Math.PI / 2)
-}
-
-/** Mirror faces need inverted release mapping so drag-follows-finger angles stay continuous. */
-function invertDragRelease(face: Face): boolean {
-  return face === 'L' || face === 'D' || face === 'B'
-}
-
-export function getDragTurn(move: Move, progress: number): 1 | 3 {
-  const positiveProgressIsTurn1 = !invertDragRelease(getDragReferenceFace(move))
-  return (progress >= 0) === positiveProgressIsTurn1 ? 1 : 3
 }
 
 export function getAnimatedLayerAngle(

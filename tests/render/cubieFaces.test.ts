@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import * as THREE from 'three'
+import type { Face } from '../../src/domain'
 import { CUBIE_SIZE } from '../../src/render/mapCubies'
 import {
   BODY_SIZE,
@@ -56,7 +57,7 @@ describe('cubie render shell', () => {
 describe('getStickerTransform', () => {
   for (const [face, expectedNormal] of Object.entries(FACE_NORMALS)) {
     it(`orients the ${face} sticker outward`, () => {
-      const transform = getStickerTransform(face as keyof typeof FACE_NORMALS)
+      const transform = getStickerTransform(face as Face)
       const normal = stickerWorldNormal(transform)
       const position = new THREE.Vector3(...transform.position)
 
