@@ -2,6 +2,16 @@
 
 Interactive 3×3 Rubik's cube built with TypeScript, React, React Three Fiber, and Zustand.
 
+## Screenshots
+
+**Desktop** — default U–F–R inspection angle at 38° FOV with studio lighting.
+
+<img src="./docs/assets/cube-puzzle-dsk.png" alt="Cube Puzzle Engine desktop view" width="900" />
+
+**Mobile** — compact layout with bottom-sheet controls.
+
+<img src="./docs/assets/cube-puzzle-mobile.png" alt="Cube Puzzle Engine mobile view" width="400" />
+
 ## Features
 
 - Animated face and slice moves with drag-to-turn and keyboard input
@@ -58,7 +68,3 @@ npm run build    # production build
 npm run test     # unit tests
 npm run lint     # ESLint
 ```
-
-## Hero screenshot
-
-The default camera frames the U–F–R inspection angle at 38° FOV with studio lighting — suitable for portfolio screenshots without additional setup.
