@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-The initial product targets a 3x3 Rubik's Cube.
+The initial product targets a 3x3 cube puzzle.
 
 Future support may include:
 

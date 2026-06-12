@@ -1,6 +1,6 @@
 # Cube Puzzle Engine
 
-Interactive 3×3 Rubik's cube built with TypeScript, React, React Three Fiber, and Zustand.
+Cube Puzzle Engine — an interactive 3×3 puzzle built with TypeScript, React, React Three Fiber, and Zustand.
 
 ## Screenshots
 

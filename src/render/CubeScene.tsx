@@ -46,7 +46,7 @@ export function CubeScene({ onDoubleClick }: CubeSceneProps) {
       style={{ width: '100%', height: '100%' }}
       onCreated={handleCreated}
       role="application"
-      aria-label="3D Rubik's cube. Use keyboard or drag faces to turn."
+      aria-label="Cube Puzzle Engine. Use keyboard or drag faces to turn."
     >
       <SceneLighting />
       <SceneEnvironment />
