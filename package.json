@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "homepage": "https://iannics.github.io/cube-puzzle-engine/",
+  "packageManager": "npm@11.6.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
