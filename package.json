@@ -2,10 +2,12 @@
   "name": "cube-puzzle-engine",
   "private": true,
   "version": "0.0.0",
+  "homepage": "https://iannics.github.io/cube-puzzle-engine/",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "typecheck": "tsc -b",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run"

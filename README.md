@@ -1,6 +1,11 @@
 # Cube Puzzle Engine
 
+[![CI](https://github.com/iannics/cube-puzzle-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/iannics/cube-puzzle-engine/actions/workflows/ci.yml)
+[![Deploy](https://github.com/iannics/cube-puzzle-engine/actions/workflows/deploy.yml/badge.svg)](https://github.com/iannics/cube-puzzle-engine/actions/workflows/deploy.yml)
+
 Cube Puzzle Engine — an interactive 3×3 puzzle built with TypeScript, React, React Three Fiber, and Zustand.
+
+**[Live demo](https://iannics.github.io/cube-puzzle-engine/)** (available after the first GitHub Pages release)
 
 ## Screenshots
 
@@ -63,8 +68,9 @@ See [docs/CONTROLS.md](docs/CONTROLS.md) for the full reference.
 ## Scripts
 
 ```bash
-npm run dev      # development server
-npm run build    # production build
-npm run test     # unit tests
-npm run lint     # ESLint
+npm run dev        # development server
+npm run build      # production build
+npm run typecheck  # TypeScript project references
+npm run test       # unit tests
+npm run lint       # ESLint
 ```

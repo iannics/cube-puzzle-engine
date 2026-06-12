@@ -186,6 +186,8 @@ export function InsetCubieModel({
   )
 }
 
+// Registry map lives alongside model components for a single import surface.
+// eslint-disable-next-line react-refresh/only-export-components -- shared cubie model registry
 export const CUBIE_MODEL_COMPONENTS: Record<CubeShapeId, ComponentType<CubieModelMeshProps>> = {
   modern: ModernCubieModel,
   classic: ClassicCubieModel,
