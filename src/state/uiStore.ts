@@ -16,6 +16,15 @@ const ONBOARDING_KEY = 'cube-engine-onboarding-complete'
 const CUBE_THEME_KEY = 'cube-engine-cube-theme'
 const BACKGROUND_THEME_KEY = 'cube-engine-background-theme'
 const CUBE_SHAPE_KEY = 'cube-engine-cube-shape'
+const COMPACT_MAX_WIDTH = 1023
+
+function isCompactViewport(): boolean {
+  try {
+    return browser().matchMedia?.(`(max-width: ${COMPACT_MAX_WIDTH}px)`).matches ?? false
+  } catch {
+    return false
+  }
+}
 
 type BrowserGlobals = {
   localStorage?: {
@@ -103,7 +112,6 @@ interface UiStore {
   shortcutsOpen: boolean
   scrambleMoveCount: ScrambleLength
   instantScramble: boolean
-  skipResetConfirm: boolean
   reducedMotion: boolean
   highQuality: boolean
   cameraRequest: CameraRequest | null
@@ -125,7 +133,6 @@ interface UiStore {
   closeShortcuts: () => void
   setScrambleMoveCount: (count: ScrambleLength) => void
   setInstantScramble: (instant: boolean) => void
-  setSkipResetConfirm: (skip: boolean) => void
   requestCameraReset: () => void
   requestCameraView: (face: Face) => void
   setPreferredUpFace: (face: Face) => void
@@ -136,6 +143,7 @@ interface UiStore {
   toggleAppearancePanel: () => void
   setAppearancePanelOpen: (open: boolean) => void
   setMobileAppearanceOpen: (open: boolean) => void
+  syncCompactLayout: (isCompact: boolean) => void
 }
 
 let cameraToken = 0
@@ -153,7 +161,6 @@ export const useUiStore = create<UiStore>((set, get) => ({
   shortcutsOpen: false,
   scrambleMoveCount: 20,
   instantScramble: false,
-  skipResetConfirm: false,
   reducedMotion: detectReducedMotion(),
   highQuality: detectHighQuality(),
   cameraRequest: null,
@@ -199,8 +206,6 @@ export const useUiStore = create<UiStore>((set, get) => ({
   setScrambleMoveCount: (count) => set({ scrambleMoveCount: count }),
 
   setInstantScramble: (instant) => set({ instantScramble: instant }),
-
-  setSkipResetConfirm: (skip) => set({ skipResetConfirm: skip }),
 
   requestCameraReset: () => {
     const { preferredUpFace } = get()
@@ -254,24 +259,28 @@ export const useUiStore = create<UiStore>((set, get) => ({
   },
 
   toggleAppearancePanel: () => {
-    const isMobile =
-      browser().matchMedia?.('(max-width: 767px)').matches ?? false
+    const isCompact = isCompactViewport()
     const nextOpen = !get().appearancePanelOpen
     set({
       appearancePanelOpen: nextOpen,
-      mobileAppearanceOpen: isMobile && nextOpen,
-      mobileSheetOpen: isMobile && nextOpen ? false : get().mobileSheetOpen,
+      mobileAppearanceOpen: isCompact && nextOpen,
+      mobileSheetOpen: isCompact && nextOpen ? false : get().mobileSheetOpen,
     })
   },
 
   setAppearancePanelOpen: (open) => {
-    const isMobile =
-      browser().matchMedia?.('(max-width: 767px)').matches ?? false
+    const isCompact = isCompactViewport()
     set({
       appearancePanelOpen: open,
-      mobileAppearanceOpen: isMobile && open,
+      mobileAppearanceOpen: isCompact && open,
     })
   },
 
   setMobileAppearanceOpen: (open) => set({ mobileAppearanceOpen: open }),
+
+  syncCompactLayout: (isCompact) => {
+    if (!isCompact) {
+      set({ mobileSheetOpen: false, mobileAppearanceOpen: false })
+    }
+  },
 }))

@@ -1,4 +1,6 @@
 import { useSessionStore, useUiStore } from '../state'
+import { Button } from './Button'
+import { cn } from './cn'
 
 function formatTime(ms: number): string {
   const totalCs = Math.floor(ms / 10)
@@ -29,28 +31,37 @@ export function SolveCompleteDialog() {
   }
 
   return (
-    <div className="dialog-backdrop" role="presentation" onClick={dismissSolveDialog}>
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 p-4 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] pt-[max(1rem,env(safe-area-inset-top,0px))] pb-[max(1rem,env(safe-area-inset-bottom,0px))]"
+      role="presentation"
+      onClick={dismissSolveDialog}
+    >
       <div
-        className="dialog glass-panel solve-dialog"
+        className={cn(
+          'glass-panel w-full max-w-md max-h-[85vh] overflow-auto rounded-2xl p-6 text-center',
+          'animate-[dialog-enter_0.2s_ease]',
+        )}
         role="dialog"
         aria-labelledby="solve-dialog-title"
         aria-modal="true"
         onClick={(event) => event.stopPropagation()}
       >
-        <p className="solve-dialog__badge">Cube solved!</p>
-        <h2 id="solve-dialog-title" className="dialog__title">
+        <p className="mb-2 text-[0.8rem] font-semibold uppercase tracking-wider text-accent-warm">
+          Cube solved!
+        </p>
+        <h2 id="solve-dialog-title" className="mb-2 font-mono text-[2.5rem] font-bold text-accent-warm">
           {formatTime(lastSolveMs)}
         </h2>
         {lastSolveMoveCount !== null && (
-          <p className="solve-dialog__meta">{lastSolveMoveCount} moves</p>
+          <p className="-mt-2 mb-4 text-[0.9rem] text-text-muted">{lastSolveMoveCount} moves</p>
         )}
 
-        <label htmlFor="solve-dialog-name" className="leaderboard__name-label">
+        <label htmlFor="solve-dialog-name" className="mb-1 block text-left text-[0.75rem] text-text-muted">
           Save as
         </label>
         <input
           id="solve-dialog-name"
-          className="leaderboard__name-input"
+          className="mb-4 w-full rounded-sm border border-surface-border bg-black/25 px-3 py-2 text-[0.85rem] text-text-primary"
           type="text"
           value={playerName}
           onChange={(event) => setPlayerName(event.target.value)}
@@ -59,13 +70,11 @@ export function SolveCompleteDialog() {
           autoFocus
         />
 
-        <div className="solve-dialog__actions">
-          <button type="button" className="btn" onClick={dismissSolveDialog}>
-            Skip
-          </button>
-          <button type="button" className="btn btn--primary" onClick={handleSave}>
+        <div className="mt-4 flex justify-end gap-2">
+          <Button onClick={dismissSolveDialog}>Skip</Button>
+          <Button variant="primary" onClick={handleSave}>
             Save to leaderboard
-          </button>
+          </Button>
         </div>
       </div>
     </div>

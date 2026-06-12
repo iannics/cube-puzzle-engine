@@ -2,6 +2,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import { useUiStore } from '../state/uiStore'
+import { useCompactViewport } from './useCompactViewport'
 import {
   applyCameraUp,
   CAMERA_RESET_DURATION_MS,
@@ -17,6 +18,7 @@ interface OrbitControlsLike {
 
 export function CameraReset() {
   const { camera, controls } = useThree()
+  const compact = useCompactViewport()
   const cameraRequest = useUiStore((state) => state.cameraRequest)
   const animatingRef = useRef(false)
   const startTimeRef = useRef(0)
@@ -35,7 +37,7 @@ export function CameraReset() {
     const pose =
       cameraRequest.mode === 'view'
         ? getCameraPoseForFace(cameraRequest.face)
-        : getResetCameraPose(cameraRequest.face)
+        : getResetCameraPose(cameraRequest.face, compact)
 
     fromPositionRef.current.copy(camera.position)
     fromUpRef.current.copy(camera.up)
@@ -46,7 +48,7 @@ export function CameraReset() {
     toTargetRef.current.copy(DEFAULT_CAMERA_TARGET)
     startTimeRef.current = performance.now()
     animatingRef.current = true
-  }, [cameraRequest, camera, controls])
+  }, [cameraRequest, camera, controls, compact])
 
   useFrame(() => {
     if (!animatingRef.current) return

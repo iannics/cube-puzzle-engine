@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useUiStore } from '../state'
+import { Button } from './Button'
 
 const STEPS = [
   {
@@ -40,17 +41,22 @@ export function OnboardingOverlay() {
   }
 
   return (
-    <div className="onboarding-overlay" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
-      <div className="onboarding-card glass-panel">
-        <div className="onboarding-card__step">
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/65 p-4 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] pt-[max(1rem,env(safe-area-inset-top,0px))] pb-[max(1rem,env(safe-area-inset-bottom,0px))]"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="onboarding-title"
+    >
+      <div className="glass-panel w-full max-w-sm rounded-2xl p-6">
+        <div className="mb-2 text-[0.75rem] text-text-muted">
           Step {step + 1} of {STEPS.length}
         </div>
-        <h2 id="onboarding-title" className="onboarding-card__title">
+        <h2 id="onboarding-title" className="mb-3 text-[1.15rem] font-semibold">
           {current.title}
         </h2>
-        <p className="onboarding-card__body">{current.body}</p>
-        <div className="onboarding-card__actions">
-          <label className="onboarding-card__skip">
+        <p className="mb-5 text-[0.9rem] leading-relaxed text-text-muted">{current.body}</p>
+        <div className="flex items-center justify-between gap-3">
+          <label className="flex items-center gap-2 text-[0.8rem] text-text-muted">
             <input
               type="checkbox"
               checked={dontShowAgain}
@@ -58,13 +64,11 @@ export function OnboardingOverlay() {
             />
             Don&apos;t show again
           </label>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button type="button" className="btn" onClick={handleSkip}>
-              Skip
-            </button>
-            <button type="button" className="btn btn--primary" onClick={handleNext}>
+          <div className="flex gap-2">
+            <Button onClick={handleSkip}>Skip</Button>
+            <Button variant="primary" onClick={handleNext}>
               {isLast ? 'Get started' : 'Next'}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

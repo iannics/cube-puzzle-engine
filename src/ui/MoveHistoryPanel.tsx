@@ -1,5 +1,6 @@
 import { formatMove, formatMoveSequence } from '../domain'
 import { useCubeStore } from '../state'
+import { Button } from './Button'
 
 async function copyText(text: string): Promise<void> {
   try {
@@ -16,35 +17,33 @@ export function MoveHistoryPanel() {
   const sequence = formatMoveSequence(moveHistory)
 
   return (
-    <div className="move-history">
+    <div className="flex h-full flex-col gap-3">
       {scrambleNotation && (
-        <div className="move-history__section">
-          <div className="move-history__label">Scramble</div>
-          <div className="move-history__scramble">{scrambleNotation}</div>
-          <button
-            type="button"
-            className="btn"
-            onClick={() => copyText(scrambleNotation)}
-          >
-            Copy scramble
-          </button>
+        <div className="flex flex-col gap-2">
+          <div className="text-[0.75rem] text-text-muted">Scramble</div>
+          <div className="break-words font-mono text-[0.8rem] leading-relaxed text-accent-warm">
+            {scrambleNotation}
+          </div>
+          <Button onClick={() => copyText(scrambleNotation)}>Copy scramble</Button>
         </div>
       )}
       {sequence ? (
-        <div className="move-history__section">
-          <div className="move-history__label">Moves</div>
-          <div className="move-history__line">{sequence}</div>
-          <button type="button" className="btn" onClick={() => copyText(sequence)}>
-            Copy moves
-          </button>
+        <div className="flex flex-col gap-2">
+          <div className="text-[0.75rem] text-text-muted">Moves</div>
+          <div className="break-words rounded-sm border border-surface-border bg-black/25 p-3 font-mono text-[0.85rem] leading-relaxed">
+            {sequence}
+          </div>
+          <Button onClick={() => copyText(sequence)}>Copy moves</Button>
         </div>
       ) : (
         !scrambleNotation && (
-          <p className="move-history__empty">Moves appear here as you turn the cube.</p>
+          <p className="text-[0.85rem] leading-relaxed text-text-muted">
+            Moves appear here as you turn the cube.
+          </p>
         )
       )}
       {moveHistory.length > 0 && (
-        <div className="move-history__list">
+        <div className="flex-1 overflow-y-auto font-mono text-[0.8rem] leading-loose text-text-muted">
           {moveHistory.map((move, index) => (
             <div key={`${index}-${formatMove(move)}`}>{formatMove(move)}</div>
           ))}

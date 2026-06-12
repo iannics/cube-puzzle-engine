@@ -44,7 +44,6 @@ export function useCubeKeyboard(): void {
   const closeShortcuts = useUiStore((state) => state.closeShortcuts)
   const shortcutsOpen = useUiStore((state) => state.shortcutsOpen)
   const requestCameraReset = useUiStore((state) => state.requestCameraReset)
-  const skipResetConfirm = useUiStore((state) => state.skipResetConfirm)
 
   useEffect(() => {
     let halfTurnNext = false
@@ -81,7 +80,6 @@ export function useCubeKeyboard(): void {
 
       if (event.key === '0') {
         event.preventDefault()
-        if (!skipResetConfirm && !window.confirm('Reset to solved?')) return
         reset()
         return
       }
@@ -120,6 +118,5 @@ export function useCubeKeyboard(): void {
     closeShortcuts,
     shortcutsOpen,
     requestCameraReset,
-    skipResetConfirm,
   ])
 }

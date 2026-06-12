@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 
+export const COMPACT_MEDIA_QUERY = '(max-width: 1023px)'
+
 export function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(() => {
     if (typeof window === 'undefined') return false
@@ -17,6 +19,11 @@ export function useMediaQuery(query: string): boolean {
   return matches
 }
 
+export function useIsCompact(): boolean {
+  return useMediaQuery(COMPACT_MEDIA_QUERY)
+}
+
+/** @deprecated Use useIsCompact — breakpoint moved to 1023px for tablet sheets */
 export function useIsMobile(): boolean {
-  return useMediaQuery('(max-width: 767px)')
+  return useIsCompact()
 }

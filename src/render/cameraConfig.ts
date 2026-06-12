@@ -6,16 +6,22 @@ export const DEFAULT_CAMERA_TARGET = new THREE.Vector3(0, 0, 0)
 
 export const ORBIT_MIN_DISTANCE = 4.0
 export const ORBIT_MAX_DISTANCE = 10.0
+export const COMPACT_ORBIT_MIN_DISTANCE = 5.5
+export const COMPACT_ORBIT_MAX_DISTANCE = 14.5
+export const COMPACT_CAMERA_FOV = 50
 export const ORBIT_MIN_POLAR_ANGLE = 0.08
 export const ORBIT_MAX_POLAR_ANGLE = Math.PI - 0.08
 export const ORBIT_DAMPING_FACTOR = 0.08
 
 export const CAMERA_RESET_DURATION_MS = 400
 
-function scaleToOrbitDistance(position: [number, number, number]): [number, number, number] {
+function scaleToOrbitDistance(
+  position: [number, number, number],
+  maxDistance: number = ORBIT_MAX_DISTANCE,
+): [number, number, number] {
   const length = Math.hypot(position[0], position[1], position[2])
   if (length === 0) return position
-  const scale = ORBIT_MAX_DISTANCE / length
+  const scale = maxDistance / length
   return [position[0] * scale, position[1] * scale, position[2] * scale]
 }
 
@@ -64,9 +70,15 @@ export function getCameraPoseForFace(face: Face): CameraPose {
   }
 }
 
-export function getResetCameraPose(upFace: Face): CameraPose {
+export function getResetCameraPose(upFace: Face, compact = false): CameraPose {
+  const [x, y, z] = RESET_ANGLES[upFace]
+  if (!compact) {
+    return { position: [x, y, z], up: [0, 1, 0] }
+  }
+  const length = Math.hypot(x, y, z)
+  const scale = COMPACT_ORBIT_MAX_DISTANCE / length
   return {
-    position: RESET_ANGLES[upFace],
+    position: [x * scale, y * scale, z * scale],
     up: [0, 1, 0],
   }
 }

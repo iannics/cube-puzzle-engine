@@ -1,4 +1,5 @@
 import { useSessionStore } from '../state'
+import { Button } from './Button'
 
 function formatTime(ms: number): string {
   const totalCs = Math.floor(ms / 10)
@@ -24,14 +25,14 @@ export function LeaderboardPanel() {
   const clearAllLeaderboard = useSessionStore((state) => state.clearAllLeaderboard)
 
   return (
-    <div className="leaderboard">
-      <div className="leaderboard__name">
-        <label htmlFor="player-name" className="leaderboard__name-label">
+    <div className="flex flex-col gap-3">
+      <div>
+        <label htmlFor="player-name" className="mb-1 block text-[0.75rem] text-text-muted">
           Default name
         </label>
         <input
           id="player-name"
-          className="leaderboard__name-input"
+          className="w-full rounded-sm border border-surface-border bg-black/25 px-3 py-2 text-[0.85rem] text-text-primary"
           type="text"
           value={playerName}
           onChange={(event) => setPlayerName(event.target.value)}
@@ -41,16 +42,26 @@ export function LeaderboardPanel() {
       </div>
 
       {leaderboard.length === 0 ? (
-        <p className="leaderboard__empty">Saved solves will appear here, ranked by time.</p>
+        <p className="m-0 text-[0.85rem] leading-relaxed text-text-muted">
+          Saved solves will appear here, ranked by time.
+        </p>
       ) : (
-        <ol className="leaderboard__list">
+        <ol className="m-0 flex list-none flex-col gap-2 p-0">
           {leaderboard.map((entry, index) => (
-            <li key={entry.id} className="leaderboard__entry">
-              <span className="leaderboard__rank">{index + 1}</span>
-              <span className="leaderboard__name-col">{entry.playerName}</span>
-              <span className="leaderboard__time">{formatTime(entry.timeMs)}</span>
-              <span className="leaderboard__meta">
-                {entry.moveCount} moves · {entry.scrambleLength} scramble · {formatDate(entry.completedAt)}
+            <li
+              key={entry.id}
+              className="grid grid-cols-[24px_1fr_auto] grid-rows-[auto_auto] gap-x-2 rounded-sm bg-black/20 p-2 text-[0.8rem]"
+            >
+              <span className="row-span-2 self-center font-mono font-bold text-text-muted">
+                {index + 1}
+              </span>
+              <span className="truncate font-semibold">{entry.playerName}</span>
+              <span className="font-mono font-semibold text-accent-warm">
+                {formatTime(entry.timeMs)}
+              </span>
+              <span className="col-span-2 text-[0.7rem] text-text-muted">
+                {entry.moveCount} moves · {entry.scrambleLength} scramble ·{' '}
+                {formatDate(entry.completedAt)}
               </span>
             </li>
           ))}
@@ -58,9 +69,8 @@ export function LeaderboardPanel() {
       )}
 
       {leaderboard.length > 0 && (
-        <button
-          type="button"
-          className="btn btn--danger"
+        <Button
+          variant="danger"
           onClick={() => {
             if (window.confirm('Clear all leaderboard entries?')) {
               clearAllLeaderboard()
@@ -68,7 +78,7 @@ export function LeaderboardPanel() {
           }}
         >
           Clear leaderboard
-        </button>
+        </Button>
       )}
     </div>
   )

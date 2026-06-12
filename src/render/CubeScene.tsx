@@ -5,6 +5,7 @@ import type { WebGLRenderer } from 'three'
 import { useAnimationStore } from '../state'
 import { useUiStore } from '../state/uiStore'
 import { CameraReset } from './CameraReset'
+import { CompactCameraFit } from './CompactCameraFit'
 import { CanvasCursor } from './CanvasCursor'
 import { CubeMesh } from './CubeMesh'
 import {
@@ -62,6 +63,7 @@ export function CubeScene({ onDoubleClick }: CubeSceneProps) {
         enabled={!isDragging}
       />
       <CameraReset />
+      <CompactCameraFit />
       <CanvasCursor />
       <OrbitGuard />
     </Canvas>
