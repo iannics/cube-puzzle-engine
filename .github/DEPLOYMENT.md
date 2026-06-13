@@ -40,11 +40,13 @@ Live URL: https://iannics.github.io/cube-puzzle-engine/
 
 1. Merge feature work into `dev` via PR (CI must pass).
 2. Open a PR from `dev` → `main` and merge when ready.
-3. **Release Please** opens/updates a bot PR (e.g. `chore(main): release 0.1.0`).
-4. Merge the Release PR → creates git tag + GitHub Release.
-5. **Deploy** workflow runs on `release: published` → builds with `VITE_BASE_PATH=/cube-puzzle-engine/` and publishes to GitHub Pages.
+3. **CI** runs on the `main` push → after checks pass, builds with `VITE_BASE_PATH=/cube-puzzle-engine/` and publishes to GitHub Pages (same workflow, gated by `needs: ci`).
+4. **Release Please** opens/updates a bot PR (e.g. `chore(main): release 0.1.0`).
+5. Merge the Release PR when you want a versioned git tag, GitHub Release, and changelog update (independent of deploy — the site is already live from step 3).
 
 Optional: enable **auto-merge** on release-please PRs for hands-off releases.
+
+To redeploy without a new commit, run the **CI** workflow manually via **Actions → CI → Run workflow** (branch: `main`).
 
 ## Local GitHub Pages preview
 
