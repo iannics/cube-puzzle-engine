@@ -2,6 +2,16 @@
 
 One-time GitHub repository configuration for CI/CD.
 
+## Toolchain
+
+- **Node:** 22 LTS (see [`.nvmrc`](../.nvmrc))
+- **npm:** 10.9.8 (pinned via `packageManager` in [`package.json`](../package.json); `setup-node` activates it in CI via Corepack)
+
+```bash
+nvm use
+npm ci
+```
+
 ## GitHub Pages (done if `build_type` is `workflow`)
 
 **Settings → Pages → Build and deployment → Source:** GitHub Actions
