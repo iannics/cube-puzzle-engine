@@ -1,7 +1,7 @@
 {
   "name": "cube-puzzle-engine",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "homepage": "https://iannics.github.io/cube-puzzle-engine/",
   "packageManager": "npm@10.9.8",
   "engines": {
