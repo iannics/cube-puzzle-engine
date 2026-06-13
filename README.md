@@ -1,73 +1,76 @@
-# React + TypeScript + Vite
+# Cube Puzzle Engine
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[![CI](https://github.com/iannics/cube-puzzle-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/iannics/cube-puzzle-engine/actions/workflows/ci.yml)
+[![Deploy](https://github.com/iannics/cube-puzzle-engine/actions/workflows/deploy.yml/badge.svg)](https://github.com/iannics/cube-puzzle-engine/actions/workflows/deploy.yml)
 
-Currently, two official plugins are available:
+Cube Puzzle Engine — an interactive 3×3 puzzle built with TypeScript, React, React Three Fiber, and Zustand.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+**[Live demo](https://iannics.github.io/cube-puzzle-engine/)** (available after the first GitHub Pages release)
 
-## React Compiler
+## Screenshots
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+**Desktop** — default U–F–R inspection angle at 38° FOV with studio lighting.
 
-## Expanding the ESLint configuration
+<img src="./docs/assets/cube-puzzle-dsk.png" alt="Cube Puzzle Engine desktop view" width="900" />
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+**Mobile** — compact layout with bottom-sheet controls.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+<img src="./docs/assets/cube-puzzle-mobile.png" alt="Cube Puzzle Engine mobile view" width="400" />
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Features
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Animated face and slice moves with drag-to-turn and keyboard input
+- WCA-accurate sticker colors and speedcubing notation
+- Scramble, undo, move history, and reset controls
+- Portfolio-quality 3D presentation with PBR materials, contact shadows, and tuned lighting
+- Keyboard-first accessibility with screen reader move announcements
+
+## Quick start
+
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Open the local URL shown in the terminal.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Controls
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+See [docs/CONTROLS.md](docs/CONTROLS.md) for the full reference.
+
+| Action | Input |
+|--------|-------|
+| Turn face | Drag a sticker |
+| Orbit | Drag background |
+| Face move | `R L U D F B` |
+| Prime | `Shift` + face |
+| Half turn | `2` then face |
+| Scramble | `X` or toolbar |
+| Undo | `Ctrl+Z` |
+| Help | `?` |
+
+## Accessibility
+
+- Keyboard shortcuts cover all primary puzzle actions.
+- Press `?` in-app for the shortcut list.
+- `prefers-reduced-motion` disables idle float and shortens animations.
+
+## Architecture
+
+| Layer | Responsibility |
+|-------|----------------|
+| `domain/` | Pure cube logic — moves, scramble, notation |
+| `state/` | Zustand orchestration — cube, animation, UI |
+| `render/` | R3F visualization |
+| `ui/` | DOM chrome — panels, toolbar, onboarding |
+| `solver/` | Solver stub (future) |
+
+## Scripts
+
+```bash
+npm run dev        # development server
+npm run build      # production build
+npm run typecheck  # TypeScript project references
+npm run test       # unit tests
+npm run lint       # ESLint
 ```

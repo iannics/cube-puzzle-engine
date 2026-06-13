@@ -143,3 +143,24 @@ fix(animation): correct interpolation timing
 test(cube): add inverse move invariants
 refactor(solver): simplify move generation logic
 docs(adr): update cube domain model decision
+
+# Styling Rules
+
+Use Tailwind CSS for UI styling.
+
+Prefer:
+- utility classes
+- reusable UI components
+- design tokens via Tailwind theme
+
+Avoid:
+- large global CSS files
+- deeply nested selectors
+- duplicated utility combinations
+
+Tailwind is allowed only in UI components.
+
+Do not use Tailwind inside:
+- cube domain
+- solver
+- rendering engine logic
